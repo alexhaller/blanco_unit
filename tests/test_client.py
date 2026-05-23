@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import json
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -29,6 +30,28 @@ from custom_components.blanco_unit.client import (
     _SetWaterHardnessPars,
     validate_pin,
 )
+
+
+def _mock_notification_response(
+    mock_client: AsyncMock, response_packets: list[bytes]
+) -> None:
+    """Configure an AsyncMock client to emit BLE notifications for a response."""
+
+    async def start_notify(_uuid, callback):
+        mock_client._notify_callback = callback
+
+    mock_client.start_notify = AsyncMock(side_effect=start_notify)
+    mock_client.stop_notify = AsyncMock()
+    mock_client.read_gatt_char = AsyncMock(
+        side_effect=AssertionError("read_gatt_char should not be used")
+    )
+
+    def _emit_packets() -> None:
+        for packet in response_packets:
+            mock_client._notify_callback(None, packet)
+
+    asyncio.get_running_loop().call_soon(_emit_packets)
+
 
 # -------------------------------
 # Exception Tests
@@ -379,41 +402,30 @@ def test_protocol_extract_pars_with_empty_results():
 
 @pytest.mark.asyncio
 async def test_protocol_read_response_chunks_success():
-    """Test reading response chunks successfully."""
+    """Test reading response chunks successfully from notifications."""
     protocol = _BlancoUnitProtocol()
     mock_client = AsyncMock()
 
-    # Mock single packet response
     packet = bytes([0xFF, 0x00, 1, 10, 0x00]) + b'{"status":"ok"}\x00\xff'
-    mock_client.read_gatt_char = AsyncMock(return_value=packet)
+    _mock_notification_response(mock_client, [packet])
 
     chunks = await protocol.read_response_chunks(mock_client)
 
     assert len(chunks) == 1
     assert chunks[0] == packet
+    mock_client.start_notify.assert_awaited_once()
+    mock_client.stop_notify.assert_awaited_once()
 
 
 @pytest.mark.asyncio
 async def test_protocol_read_response_chunks_multiple():
-    """Test reading multiple response chunks."""
+    """Test reading multiple response chunks from notifications."""
     protocol = _BlancoUnitProtocol()
     mock_client = AsyncMock()
 
-    # Mock multi-packet response
     packet1 = bytes([0xFF, 0x00, 2, 10, 0x00]) + b'{"status":'
     packet2 = bytes([10, 1]) + b'"ok"}\x00\xff'
-
-    # Simulate reading chunks
-    read_count = 0
-
-    async def mock_read(*args, **kwargs):
-        nonlocal read_count
-        read_count += 1
-        if read_count == 1:
-            return packet1
-        return packet2
-
-    mock_client.read_gatt_char = mock_read
+    _mock_notification_response(mock_client, [packet1, packet2])
 
     chunks = await protocol.read_response_chunks(mock_client)
 
@@ -428,9 +440,14 @@ async def test_protocol_read_response_chunks_timeout():
     protocol = _BlancoUnitProtocol()
     mock_client = AsyncMock()
 
-    # Mock incomplete response (expected 2 chunks, only get 1)
-    packet1 = bytes([0xFF, 0x00, 2, 10, 0x00]) + b'{"status":'
-    mock_client.read_gatt_char = AsyncMock(return_value=packet1)
+    async def start_notify(_uuid, callback):
+        mock_client._notify_callback = callback
+
+    mock_client.start_notify = AsyncMock(side_effect=start_notify)
+    mock_client.stop_notify = AsyncMock()
+    mock_client.read_gatt_char = AsyncMock(
+        side_effect=AssertionError("read_gatt_char should not be used")
+    )
 
     with pytest.raises(TimeoutError, match="Incomplete response"):
         await protocol.read_response_chunks(mock_client)
@@ -438,14 +455,14 @@ async def test_protocol_read_response_chunks_timeout():
 
 @pytest.mark.asyncio
 async def test_protocol_read_response_chunks_error():
-    """Test reading response chunks with read error."""
+    """Test notification setup failures propagate."""
     protocol = _BlancoUnitProtocol()
     mock_client = AsyncMock()
 
-    # Mock read error
-    mock_client.read_gatt_char = AsyncMock(side_effect=Exception("Read error"))
+    mock_client.start_notify = AsyncMock(side_effect=Exception("start_notify error"))
+    mock_client.stop_notify = AsyncMock()
 
-    with pytest.raises(TimeoutError, match="Incomplete response"):
+    with pytest.raises(Exception, match="start_notify error"):
         await protocol.read_response_chunks(mock_client)
 
 
@@ -455,7 +472,6 @@ async def test_protocol_send_pairing_request():
     protocol = _BlancoUnitProtocol()
     mock_client = AsyncMock()
 
-    # Mock response
     response_data = {
         "body": {"results": [{"pars": {"dev_id": "device123", "dev_type": 1}}]}
     }
@@ -464,13 +480,15 @@ async def test_protocol_send_pairing_request():
         bytes([0xFF, 0x00, 1, 10, 0x00]) + json_str.encode("utf-8") + b"\x00\xff"
     )
 
+    _mock_notification_response(mock_client, [response_packet])
     mock_client.write_gatt_char = AsyncMock()
-    mock_client.read_gatt_char = AsyncMock(return_value=response_packet)
 
     result = await protocol.send_pairing_request(mock_client, "12345")
 
     assert result["body"]["results"][0]["pars"]["dev_id"] == "device123"
     mock_client.write_gatt_char.assert_called()
+    mock_client.start_notify.assert_awaited_once()
+    mock_client.stop_notify.assert_awaited_once()
 
 
 @pytest.mark.asyncio
@@ -479,15 +497,14 @@ async def test_protocol_send_request_with_ctrl():
     protocol = _BlancoUnitProtocol()
     mock_client = AsyncMock()
 
-    # Mock response
     response_data = {"body": {"results": [{"pars": {"status": "ok"}}]}}
     json_str = json.dumps(response_data)
     response_packet = (
         bytes([0xFF, 0x00, 1, 10, 0x00]) + json_str.encode("utf-8") + b"\x00\xff"
     )
 
+    _mock_notification_response(mock_client, [response_packet])
     mock_client.write_gatt_char = AsyncMock()
-    mock_client.read_gatt_char = AsyncMock(return_value=response_packet)
 
     result = await protocol.send_request(
         mock_client, "12345", "device123", dev_type=1, evt_type=1, ctrl=2
@@ -503,15 +520,14 @@ async def test_protocol_send_request_without_ctrl():
     protocol = _BlancoUnitProtocol()
     mock_client = AsyncMock()
 
-    # Mock response
     response_data = {"body": {"results": [{"pars": {"status": "ok"}}]}}
     json_str = json.dumps(response_data)
     response_packet = (
         bytes([0xFF, 0x00, 1, 10, 0x00]) + json_str.encode("utf-8") + b"\x00\xff"
     )
 
+    _mock_notification_response(mock_client, [response_packet])
     mock_client.write_gatt_char = AsyncMock()
-    mock_client.read_gatt_char = AsyncMock(return_value=response_packet)
 
     result = await protocol.send_request(
         mock_client,
@@ -525,6 +541,41 @@ async def test_protocol_send_request_without_ctrl():
 
     assert result["body"]["results"][0]["pars"]["status"] == "ok"
     mock_client.write_gatt_char.assert_called()
+
+
+@pytest.mark.asyncio
+async def test_protocol_send_request_subscribes_before_write():
+    """Test request flow subscribes to notifications before writing."""
+    protocol = _BlancoUnitProtocol()
+    mock_client = AsyncMock()
+    events = []
+
+    async def start_notify(_uuid, callback):
+        events.append("start_notify")
+        mock_client._notify_callback = callback
+
+    async def write_gatt_char(_uuid, packet, response=True):
+        events.append("write")
+        mock_client._notify_callback(
+            None, bytes([0xFF, 0x00, 1, 10, 0x00]) + b'{"status":"ok"}\x00\xff'
+        )
+
+    async def stop_notify(_uuid):
+        events.append("stop_notify")
+
+    mock_client.start_notify = AsyncMock(side_effect=start_notify)
+    mock_client.stop_notify = AsyncMock(side_effect=stop_notify)
+    mock_client.write_gatt_char = AsyncMock(side_effect=write_gatt_char)
+    mock_client.read_gatt_char = AsyncMock(
+        side_effect=AssertionError("read_gatt_char should not be used")
+    )
+
+    result = await protocol.send_request(
+        mock_client, "12345", "device123", dev_type=1, evt_type=1, ctrl=2
+    )
+
+    assert result["body"]["results"][0]["pars"]["status"] == "ok"
+    assert events == ["start_notify", "write", "stop_notify"]
 
 
 # -------------------------------
@@ -555,7 +606,6 @@ async def test_validate_pin_success_with_dev_id():
     """Test validate_pin with successful PIN and device ID."""
     mock_client = AsyncMock()
 
-    # Mock successful pairing response
     response_data = {
         "body": {
             "results": [{"pars": {}}],
@@ -567,8 +617,8 @@ async def test_validate_pin_success_with_dev_id():
         bytes([0xFF, 0x00, 1, 10, 0x00]) + json_str.encode("utf-8") + b"\x00\xff"
     )
 
+    _mock_notification_response(mock_client, [response_packet])
     mock_client.write_gatt_char = AsyncMock()
-    mock_client.read_gatt_char = AsyncMock(return_value=response_packet)
 
     validation = await validate_pin(mock_client, "12345")
 
@@ -582,15 +632,14 @@ async def test_validate_pin_wrong_pin_error_code():
     """Test validate_pin with wrong PIN (error code 4)."""
     mock_client = AsyncMock()
 
-    # Mock auth error response
     response_data = {"body": {"results": [{"pars": {"errs": [{"err_code": 4}]}}]}}
     json_str = json.dumps(response_data)
     response_packet = (
         bytes([0xFF, 0x00, 1, 10, 0x00]) + json_str.encode("utf-8") + b"\x00\xff"
     )
 
+    _mock_notification_response(mock_client, [response_packet])
     mock_client.write_gatt_char = AsyncMock()
-    mock_client.read_gatt_char = AsyncMock(return_value=response_packet)
 
     validation = await validate_pin(mock_client, "99999")
 
@@ -602,15 +651,14 @@ async def test_validate_pin_no_device_id():
     """Test validate_pin when no device ID is returned."""
     mock_client = AsyncMock()
 
-    # Mock response without device ID
     response_data = {"body": {"results": [{"pars": {}}]}}
     json_str = json.dumps(response_data)
     response_packet = (
         bytes([0xFF, 0x00, 1, 10, 0x00]) + json_str.encode("utf-8") + b"\x00\xff"
     )
 
+    _mock_notification_response(mock_client, [response_packet])
     mock_client.write_gatt_char = AsyncMock()
-    mock_client.read_gatt_char = AsyncMock(return_value=response_packet)
 
     validation = await validate_pin(mock_client, "12345")
 
@@ -641,7 +689,6 @@ async def test_validate_pin_with_provided_protocol():
     mock_client = AsyncMock()
     protocol = _BlancoUnitProtocol()
 
-    # Mock successful pairing response
     response_data = {
         "body": {
             "results": [{"pars": {}}],
@@ -653,8 +700,8 @@ async def test_validate_pin_with_provided_protocol():
         bytes([0xFF, 0x00, 1, 10, 0x00]) + json_str.encode("utf-8") + b"\x00\xff"
     )
 
+    _mock_notification_response(mock_client, [response_packet])
     mock_client.write_gatt_char = AsyncMock()
-    mock_client.read_gatt_char = AsyncMock(return_value=response_packet)
 
     validation = await validate_pin(mock_client, "12345", protocol=protocol)
 
