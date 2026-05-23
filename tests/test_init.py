@@ -527,7 +527,7 @@ async def test_find_device_by_scanning_match_found(hass: HomeAssistant) -> None:
         patch(
             "custom_components.blanco_unit.establish_connection",
             return_value=mock_client,
-        ),
+        ) as mock_establish_connection,
         patch(
             "custom_components.blanco_unit.validate_pin",
             return_value=PinValidationResult(
@@ -536,6 +536,11 @@ async def test_find_device_by_scanning_match_found(hass: HomeAssistant) -> None:
         ),
     ):
         device = await _find_device_by_scanning(hass, "12345", "expected_dev_id")
+
+    mock_establish_connection.assert_awaited_once()
+    assert mock_establish_connection.await_args.kwargs["pair"] is True
+    assert mock_establish_connection.await_args.kwargs["name"] == dev_close.name
+    assert mock_establish_connection.await_args.kwargs["device"] == dev_close
 
     # Should return the closest device (higher RSSI first)
     assert device == dev_close

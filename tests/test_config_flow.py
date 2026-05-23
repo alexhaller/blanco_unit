@@ -461,6 +461,13 @@ async def test_validate_input_success(
 
     assert not result.errors
     assert result.description_placeholders is None
+    mock_establish_connection.assert_awaited_once_with(
+        client_class=mock_establish_connection.await_args.kwargs["client_class"],
+        device=mock_bluetooth_device,
+        name=mock_bluetooth_device.name,
+        timeout=120,
+        pair=True,
+    )
 
 
 async def test_validate_input_value_error(hass: HomeAssistant) -> None:
