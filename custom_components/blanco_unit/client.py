@@ -315,6 +315,9 @@ class _BlancoUnitProtocol:
         attempts = 0
         max_attempts = 40
 
+        # Give the device time to process the request before first read
+        await asyncio.sleep(0.2)
+
         while len(chunks) < expected and attempts < max_attempts:
             try:
                 data = await client.read_gatt_char(CHARACTERISTIC_UUID)
@@ -323,6 +326,9 @@ class _BlancoUnitProtocol:
                     chunks.append(data)
                     if data[0] == 0xFF:
                         expected = data[2]
+                else:
+                    # No new data yet — wait before retrying
+                    await asyncio.sleep(0.1)
                 attempts += 1
             except Exception as e:  # noqa: BLE001
                 _LOGGER.error("Read error: %s", e)
