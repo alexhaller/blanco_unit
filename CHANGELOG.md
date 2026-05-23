@@ -1,3 +1,9 @@
+## [1.2.0](https://github.com/alexhaller/blanco_unit/compare/v1.1.3...v1.2.0) (2026-05-23)
+
+### Features
+
+* harden BLE error handling with detailed diagnostics ([03df58b](https://github.com/alexhaller/blanco_unit/commit/03df58b20a608afcab4217dcb224000d4190a97d))
+
 ## [1.1.3](https://github.com/alexhaller/blanco_unit/compare/v1.1.2...v1.1.3) (2026-05-23)
 
 ### Bug Fixes
