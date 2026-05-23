@@ -1,3 +1,9 @@
+## [1.1.2](https://github.com/alexhaller/blanco_unit/compare/v1.1.1...v1.1.2) (2026-05-23)
+
+### Bug Fixes
+
+* revert to read_gatt_char polling — characteristic does not support NOTIFY ([b72af28](https://github.com/alexhaller/blanco_unit/commit/b72af28199499cdebde24d39075149f7a265ad7e))
+
 ## [1.1.1](https://github.com/alexhaller/blanco_unit/compare/v1.1.0...v1.1.1) (2026-05-23)
 
 ### Bug Fixes
