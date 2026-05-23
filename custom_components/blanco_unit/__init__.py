@@ -23,6 +23,7 @@ from homeassistant.exceptions import (
     HomeAssistantError,
     IntegrationError,
 )
+from homeassistant.helpers import config_validation as cv
 
 from .client import validate_pin
 from .const import (
@@ -49,6 +50,8 @@ PLATFORMS: list[Platform] = [
 ]
 
 type BlancoUnitConfigEntry = ConfigEntry[BlancoUnitCoordinator]
+
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 
 async def async_setup(hass: HomeAssistant, entry: BlancoUnitConfigEntry) -> bool:
