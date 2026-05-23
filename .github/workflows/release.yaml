@@ -1,34 +1,56 @@
 name: Release
 
 on:
-  release:
-    types:
-      - published
+  push:
+    branches:
+      - main
+      - master
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
-  release_zip_file:
-    name: Run automations to build latest release
+  release:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      issues: write
+      pull-requests: write
     steps:
-      - name: 🛍️ Checkout the repo
-        uses: actions/checkout@v6.0.2
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
 
-      - name: 📦 Created zipped release package
-        shell: bash
+      - name: Semantic Release
+        id: semantic
+        uses: cycjimmy/semantic-release-action@v6
+        with:
+          extra_plugins: |
+            @semantic-release/commit-analyzer
+            @semantic-release/release-notes-generator
+            @semantic-release/changelog
+            @semantic-release/exec
+            @semantic-release/git
+            conventional-changelog-conventionalcommits
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build release zip
+        if: steps.semantic.outputs.new_release_published == 'true'
         run: |
-          cd "${{ github.workspace }}/custom_components/blanco_unit"
+          cd custom_components/blanco_unit
           zip blanco_unit.zip -r ./
 
-      - name: 🔏 Sign release package
+      - name: Sign release package
+        if: steps.semantic.outputs.new_release_published == 'true'
         uses: sigstore/gh-action-sigstore-python@v3.2.0
         with:
           inputs: ${{ github.workspace }}/custom_components/blanco_unit/blanco_unit.zip
 
-      - name: ⬆️ Upload zip to release
+      - name: Upload zip to release
+        if: steps.semantic.outputs.new_release_published == 'true'
         uses: softprops/action-gh-release@v2.5.3
         with:
+          tag_name: v${{ steps.semantic.outputs.new_release_version }}
           files: ${{ github.workspace }}/custom_components/blanco_unit/blanco_unit.zip
-
-    
