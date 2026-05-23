@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import asyncio
-from collections.abc import Awaitable, Callable
+from collections.abc import Callable
 from dataclasses import asdict, dataclass, field
 import hashlib
 import json
@@ -307,77 +307,33 @@ class _BlancoUnitProtocol:
         pars = self.extract_pars(response)
         return pars.get("errs", [])
 
-    async def _subscribe_to_notifications(
-        self, client: BleakClient
-    ) -> tuple[asyncio.Queue[bytes], Callable[[], Awaitable[None]]]:
-        """Subscribe to characteristic notifications and return a queue for packets."""
-        queue: asyncio.Queue[bytes] = asyncio.Queue()
-
-        def _handle_notification(_: int, data: bytearray) -> None:
-            queue.put_nowait(bytes(data))
-
-        await client.start_notify(CHARACTERISTIC_UUID, _handle_notification)
-
-        async def _stop() -> None:
-            await client.stop_notify(CHARACTERISTIC_UUID)
-
-        return queue, _stop
-
-    async def _read_notification_chunks(
-        self, queue: asyncio.Queue[bytes], timeout: float = 30.0
-    ) -> list[bytes]:
-        """Collect BLE notification packets until the full response has been received."""
+    async def read_response_chunks(self, client: BleakClient) -> list[bytes]:
+        """Read response chunks from the characteristic."""
         chunks = []
         expected = 1
         last_data = b""
-        loop = asyncio.get_running_loop()
-        deadline = loop.time() + timeout
+        attempts = 0
+        max_attempts = 40
 
-        while len(chunks) < expected:
-            remaining = deadline - loop.time()
-            if remaining <= 0:
-                raise TimeoutError(
-                    f"Incomplete response: got {len(chunks)}/{expected} chunks"
-                )
-
+        while len(chunks) < expected and attempts < max_attempts:
             try:
-                data = await asyncio.wait_for(queue.get(), timeout=remaining)
-            except TimeoutError as err:
-                raise TimeoutError(
-                    f"Incomplete response: got {len(chunks)}/{expected} chunks"
-                ) from err
+                data = await client.read_gatt_char(CHARACTERISTIC_UUID)
+                if data != last_data:
+                    last_data = data
+                    chunks.append(data)
+                    if data[0] == 0xFF:
+                        expected = data[2]
+                attempts += 1
+            except Exception as e:  # noqa: BLE001
+                _LOGGER.error("Read error: %s", e)
+                break
 
-            if data == last_data:
-                continue
-
-            last_data = data
-            chunks.append(data)
-            if data[0] == 0xFF:
-                expected = data[2]
+        if len(chunks) != expected:
+            raise TimeoutError(
+                f"Incomplete response: got {len(chunks)}/{expected} chunks"
+            )
 
         return chunks
-
-    async def _write_and_collect_response(
-        self, client: BleakClient, packets: list[bytes]
-    ) -> list[bytes]:
-        """Subscribe to notifications, send the packets, and collect the response."""
-        queue, stop_notify = await self._subscribe_to_notifications(client)
-
-        try:
-            for packet in packets:
-                await client.write_gatt_char(CHARACTERISTIC_UUID, packet, response=True)
-            return await self._read_notification_chunks(queue)
-        finally:
-            await stop_notify()
-
-    async def read_response_chunks(self, client: BleakClient) -> list[bytes]:
-        """Read response chunks from the characteristic using notifications."""
-        queue, stop_notify = await self._subscribe_to_notifications(client)
-
-        try:
-            return await self._read_notification_chunks(queue)
-        finally:
-            await stop_notify()
 
     async def send_pairing_request(
         self, client: BleakClient, pin: str
@@ -403,7 +359,12 @@ class _BlancoUnitProtocol:
         _LOGGER.debug("Sending pairing data: %s", request_dict)
         _LOGGER.debug("Sending pairing request (ReqID: %s)", req_id)
 
-        chunks = await self._write_and_collect_response(client, packets)
+        # Send packets
+        for packet in packets:
+            await client.write_gatt_char(CHARACTERISTIC_UUID, packet, response=True)
+
+        # Read response
+        chunks = await self.read_response_chunks(client)
         return self.parse_response(chunks)
 
     async def send_request(
@@ -442,7 +403,12 @@ class _BlancoUnitProtocol:
         _LOGGER.debug("Sending data: %s from %s", request_dict, body)
         _LOGGER.debug("Sending request (ReqID: %s, %d packets)", req_id, len(packets))
 
-        chunks = await self._write_and_collect_response(client, packets)
+        # Send packets
+        for packet in packets:
+            await client.write_gatt_char(CHARACTERISTIC_UUID, packet, response=True)
+
+        # Read response
+        chunks = await self.read_response_chunks(client)
         return self.parse_response(chunks)
 
 
@@ -516,7 +482,6 @@ class BlancoUnitBluetoothClient:
                 device=self._device,
                 name=self._device.name or "Unknown Device",
                 disconnected_callback=self._handle_disconnect,
-                pair=True,
                 timeout=120,
             )
 
