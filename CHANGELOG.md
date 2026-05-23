@@ -1,3 +1,9 @@
+## [1.1.1](https://github.com/alexhaller/blanco_unit/compare/v1.1.0...v1.1.1) (2026-05-23)
+
+### Bug Fixes
+
+* remove pair=True from BLE establish_connection ([010f101](https://github.com/alexhaller/blanco_unit/commit/010f1016bb289a636717290068d33d354cfc6ea3))
+
 ## [1.1.0](https://github.com/alexhaller/blanco_unit/compare/v1.0.0...v1.1.0) (2026-05-23)
 
 ### Features
