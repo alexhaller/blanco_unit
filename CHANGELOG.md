@@ -1,3 +1,9 @@
+## [1.1.0](https://github.com/alexhaller/blanco_unit/compare/v1.0.0...v1.1.0) (2026-05-23)
+
+### Features
+
+* add brand icon for HACS validation ([1c4e708](https://github.com/alexhaller/blanco_unit/commit/1c4e7083f041160aa1fd34cce71887ccdb897e22))
+
 ## 1.0.0 (2026-05-23)
 
 ### Features
