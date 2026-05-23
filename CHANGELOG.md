@@ -1,3 +1,9 @@
+## [1.1.3](https://github.com/alexhaller/blanco_unit/compare/v1.1.2...v1.1.3) (2026-05-23)
+
+### Bug Fixes
+
+* add delays in read_gatt_char polling loop ([4b65cfb](https://github.com/alexhaller/blanco_unit/commit/4b65cfb85376abab14dda35dca387b43922e2a76))
+
 ## [1.1.2](https://github.com/alexhaller/blanco_unit/compare/v1.1.1...v1.1.2) (2026-05-23)
 
 ### Bug Fixes
