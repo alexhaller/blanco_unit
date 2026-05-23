@@ -307,39 +307,104 @@ class _BlancoUnitProtocol:
         pars = self.extract_pars(response)
         return pars.get("errs", [])
 
+    async def _write_packets(self, client: BleakClient, packets: list[bytes]) -> None:
+        """Write all request packets to the characteristic with diagnostics."""
+        for idx, packet in enumerate(packets, start=1):
+            try:
+                await client.write_gatt_char(CHARACTERISTIC_UUID, packet, response=True)
+            except Exception as err:
+                raise BlancoUnitConnectionError(
+                    f"Write failed on packet {idx}/{len(packets)} "
+                    f"({len(packet)} bytes): {err!r}"
+                ) from err
+
     async def read_response_chunks(self, client: BleakClient) -> list[bytes]:
-        """Read response chunks from the characteristic."""
-        chunks = []
+        """Read response chunks from the characteristic via polling."""
+        chunks: list[bytes] = []
         expected = 1
         last_data = b""
         attempts = 0
         max_attempts = 40
+        empty_reads = 0
+        duplicate_reads = 0
+        read_errors = 0
+        last_error: Exception | None = None
 
         # Give the device time to process the request before first read
         await asyncio.sleep(0.2)
 
         while len(chunks) < expected and attempts < max_attempts:
+            attempts += 1
             try:
                 data = await client.read_gatt_char(CHARACTERISTIC_UUID)
-                if data != last_data:
-                    last_data = data
-                    chunks.append(data)
-                    if data[0] == 0xFF:
-                        expected = data[2]
-                else:
-                    # No new data yet — wait before retrying
-                    await asyncio.sleep(0.1)
-                attempts += 1
-            except Exception as e:  # noqa: BLE001
-                _LOGGER.error("Read error: %s", e)
-                break
+            except Exception as err:  # noqa: BLE001
+                read_errors += 1
+                last_error = err
+                _LOGGER.debug(
+                    "Read attempt %d/%d failed: %r", attempts, max_attempts, err
+                )
+                await asyncio.sleep(0.1)
+                continue
 
-        if len(chunks) != expected:
-            raise TimeoutError(
-                f"Incomplete response: got {len(chunks)}/{expected} chunks"
+            if not data:
+                empty_reads += 1
+                _LOGGER.debug(
+                    "Read attempt %d/%d returned empty data",
+                    attempts,
+                    max_attempts,
+                )
+                await asyncio.sleep(0.1)
+                continue
+
+            if data == last_data:
+                duplicate_reads += 1
+                _LOGGER.debug(
+                    "Read attempt %d/%d returned duplicate data (%d bytes)",
+                    attempts,
+                    max_attempts,
+                    len(data),
+                )
+                await asyncio.sleep(0.1)
+                continue
+
+            last_data = data
+            chunks.append(data)
+            _LOGGER.debug(
+                "Read attempt %d/%d: chunk %d received (%d bytes, header=0x%02x)",
+                attempts,
+                max_attempts,
+                len(chunks),
+                len(data),
+                data[0],
+            )
+            if data[0] == 0xFF and len(data) >= 3:
+                expected = data[2]
+
+        if len(chunks) == expected:
+            return chunks
+
+        diag = (
+            f"attempts={attempts}, empty_reads={empty_reads}, "
+            f"duplicate_reads={duplicate_reads}, read_errors={read_errors}"
+        )
+
+        if read_errors == attempts and last_error is not None:
+            raise BlancoUnitConnectionError(
+                f"All {attempts} read attempts failed. The characteristic may "
+                f"not support read, or the device is not responding. "
+                f"Last error: {last_error!r} ({diag})"
+            ) from last_error
+
+        if not chunks:
+            raise BlancoUnitConnectionError(
+                f"No response received from device. The device may be busy, "
+                f"out of range, or not implementing the expected protocol "
+                f"({diag})"
             )
 
-        return chunks
+        raise BlancoUnitConnectionError(
+            f"Incomplete response: got {len(chunks)}/{expected} chunks ({diag})"
+        )
 
     async def send_pairing_request(
         self, client: BleakClient, pin: str
@@ -363,13 +428,11 @@ class _BlancoUnitProtocol:
         packets = self.create_packets(request_dict, self.msg_id_counter)
 
         _LOGGER.debug("Sending pairing data: %s", request_dict)
-        _LOGGER.debug("Sending pairing request (ReqID: %s)", req_id)
+        _LOGGER.debug(
+            "Sending pairing request (ReqID: %s, %d packets)", req_id, len(packets)
+        )
 
-        # Send packets
-        for packet in packets:
-            await client.write_gatt_char(CHARACTERISTIC_UUID, packet, response=True)
-
-        # Read response
+        await self._write_packets(client, packets)
         chunks = await self.read_response_chunks(client)
         return self.parse_response(chunks)
 
@@ -409,11 +472,7 @@ class _BlancoUnitProtocol:
         _LOGGER.debug("Sending data: %s from %s", request_dict, body)
         _LOGGER.debug("Sending request (ReqID: %s, %d packets)", req_id, len(packets))
 
-        # Send packets
-        for packet in packets:
-            await client.write_gatt_char(CHARACTERISTIC_UUID, packet, response=True)
-
-        # Read response
+        await self._write_packets(client, packets)
         chunks = await self.read_response_chunks(client)
         return self.parse_response(chunks)
 

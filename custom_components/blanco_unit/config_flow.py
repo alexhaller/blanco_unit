@@ -20,7 +20,11 @@ from homeassistant.helpers.selector import (
     TextSelectorType,
 )
 
-from .client import validate_pin
+from .client import (
+    BlancoUnitAuthenticationError,
+    BlancoUnitConnectionError,
+    validate_pin,
+)
 from .const import (
     CONF_DEV_ID,
     CONF_ERROR,
@@ -196,6 +200,21 @@ class BlancoUnitConfigFlow(ConfigFlow, domain=DOMAIN):
         except ValueError as err:
             _LOGGER.error("Validation error: %s", err)
             return ValidationResult({CONF_ERROR: "invalid_pin_format"})
+        except BlancoUnitAuthenticationError as err:
+            _LOGGER.warning("Authentication failed during validation: %s", err)
+            return ValidationResult({CONF_ERROR: "error_invalid_authentication"})
+        except BlancoUnitConnectionError as err:
+            _LOGGER.error("Connection error during validation: %s", err)
+            return ValidationResult(
+                errors={CONF_ERROR: "error_connection"},
+                description_placeholders={"error": str(err)},
+            )
+        except TimeoutError as err:
+            _LOGGER.error("Timeout during validation: %s", err)
+            return ValidationResult(
+                errors={CONF_ERROR: "error_connection"},
+                description_placeholders={"error": str(err)},
+            )
         except Exception as err:
             _LOGGER.exception("Unexpected error during validation")
             return ValidationResult(

@@ -433,19 +433,19 @@ async def test_protocol_read_response_chunks_timeout():
     # Always return same data — deduplication means no chunks are ever added
     mock_client.read_gatt_char = AsyncMock(return_value=b"\x00")
 
-    with pytest.raises(TimeoutError, match="Incomplete response"):
+    with pytest.raises(BlancoUnitConnectionError, match="No response received"):
         await protocol.read_response_chunks(mock_client)
 
 
 @pytest.mark.asyncio
 async def test_protocol_read_response_chunks_error():
-    """Test read_gatt_char errors are swallowed and result in TimeoutError."""
+    """Test read_gatt_char errors surface as a connection error."""
     protocol = _BlancoUnitProtocol()
     mock_client = AsyncMock()
 
     mock_client.read_gatt_char = AsyncMock(side_effect=Exception("read error"))
 
-    with pytest.raises(TimeoutError, match="Incomplete response"):
+    with pytest.raises(BlancoUnitConnectionError, match="All .* read attempts failed"):
         await protocol.read_response_chunks(mock_client)
 
 
