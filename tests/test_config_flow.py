@@ -466,7 +466,6 @@ async def test_validate_input_success(
         device=mock_bluetooth_device,
         name=mock_bluetooth_device.name,
         timeout=120,
-        pair=True,
     )
 
 

@@ -167,7 +167,6 @@ class BlancoUnitConfigFlow(ConfigFlow, domain=DOMAIN):
                 device=device,
                 name=device.name or "Unknown Device",
                 timeout=120,
-                pair=True,
             )
 
             _LOGGER.debug("await validate_pin")

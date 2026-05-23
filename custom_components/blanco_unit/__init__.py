@@ -115,7 +115,6 @@ async def _find_device_by_scanning(
                 client_class=BleakClientWithServiceCache,
                 device=device,
                 name=device.name or "Unknown Device",
-                pair=True,
             )
 
             result = await validate_pin(client, pin)
