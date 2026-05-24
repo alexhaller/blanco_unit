@@ -1,3 +1,9 @@
+## [1.2.4](https://github.com/alexhaller/blanco_unit/compare/v1.2.3...v1.2.4) (2026-05-24)
+
+### Bug Fixes
+
+* ensure GATT service discovery completes before characteristic reads ([a614e76](https://github.com/alexhaller/blanco_unit/commit/a614e76c41de35f9531144429b436e7812dd06ea))
+
 ## [1.2.3](https://github.com/alexhaller/blanco_unit/compare/v1.2.2...v1.2.3) (2026-05-24)
 
 ### Bug Fixes
