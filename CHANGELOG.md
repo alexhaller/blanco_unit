@@ -1,3 +1,9 @@
+## [1.2.3](https://github.com/alexhaller/blanco_unit/compare/v1.2.2...v1.2.3) (2026-05-24)
+
+### Bug Fixes
+
+* explicitly trigger BlueZ ATT MTU negotiation ([2b0e4da](https://github.com/alexhaller/blanco_unit/commit/2b0e4dac987b6150be09314f91f2ce1cd8225733))
+
 ## [1.2.2](https://github.com/alexhaller/blanco_unit/compare/v1.2.1...v1.2.2) (2026-05-24)
 
 ### Bug Fixes
