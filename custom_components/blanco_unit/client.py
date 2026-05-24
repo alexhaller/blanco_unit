@@ -551,7 +551,7 @@ class BlancoUnitBluetoothClient:
             )
 
             # Create protocol instance sized to the negotiated ATT MTU
-            protocol = _protocol_for_client(client)
+            protocol = await _protocol_for_client(client)
 
             # Perform initial pairing
             result = await self._perform_pairing(client, protocol)
@@ -1001,13 +1001,40 @@ def _extract_device_type(response: dict[str, Any]) -> int | None:
     return None
 
 
-def _protocol_for_client(client: BleakClient) -> _BlancoUnitProtocol:
+async def _negotiate_mtu(client: BleakClient) -> int:
+    """Trigger ATT MTU negotiation on the BlueZ backend if needed.
+
+    Returns the negotiated ATT MTU. BlueZ does not always auto-negotiate
+    on connect; calling the backend's _acquire_mtu() forces it.
+    """
+    mtu = getattr(client, "mtu_size", None) or 23
+    if mtu > 23:
+        return mtu
+
+    backend = getattr(client, "_backend", None)
+    acquire = getattr(backend, "_acquire_mtu", None) if backend else None
+    if acquire is None:
+        return mtu
+
+    try:
+        await acquire()
+    except Exception as err:  # noqa: BLE001
+        _LOGGER.debug("MTU negotiation failed (continuing with %d): %r", mtu, err)
+        return mtu
+
+    new_mtu = getattr(client, "mtu_size", None) or mtu
+    if new_mtu != mtu:
+        _LOGGER.debug("MTU negotiated: %d -> %d", mtu, new_mtu)
+    return new_mtu
+
+
+async def _protocol_for_client(client: BleakClient) -> _BlancoUnitProtocol:
     """Create a protocol sized to fit the client's negotiated ATT MTU.
 
     The protocol's MTU is the total write packet size; it must be at most
     ATT MTU - 3 (3 bytes for the ATT write header).
     """
-    att_mtu = getattr(client, "mtu_size", None) or 23
+    att_mtu = await _negotiate_mtu(client)
     protocol_mtu = min(MTU_SIZE, att_mtu - 3)
     # Need at least 6 bytes for the 5-byte first-packet header + 1 payload byte
     protocol_mtu = max(6, protocol_mtu)
@@ -1058,7 +1085,7 @@ async def validate_pin(
 
     # Use provided protocol or create one sized to the negotiated ATT MTU
     if protocol is None:
-        protocol = _protocol_for_client(client)
+        protocol = await _protocol_for_client(client)
 
     # Send pairing request and get response
     response = await protocol.send_pairing_request(client, pin)
