@@ -35,6 +35,7 @@
       "invalid_pin_format": "PIN must be exactly 5 digits (00000-99999).",
       "error_device_not_found": "Device not found. Please ensure the Blanco Unit is powered on and in Bluetooth range.",
       "error_invalid_authentication": "Authentication failed. Please check that the PIN is correct.",
+      "error_device_unreachable": "Could not reach the device. Make sure it is powered on, in Bluetooth range, and not already connected to another app: {error}",
       "error_connection": "Could not communicate with the device: {error}",
       "error_unknown": "Failed to connect to the device: {error}"
     },

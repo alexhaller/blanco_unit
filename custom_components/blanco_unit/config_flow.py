@@ -7,7 +7,13 @@ import logging
 import re
 from typing import Any
 
-from bleak_retry_connector import BleakClientWithServiceCache, establish_connection
+from bleak.exc import BleakError
+from bleak_retry_connector import (
+    BleakClientWithServiceCache,
+    BleakConnectionError,
+    BleakNotFoundError,
+    establish_connection,
+)
 import voluptuous as vol
 from voluptuous.schema_builder import UNDEFINED
 
@@ -203,23 +209,32 @@ class BlancoUnitConfigFlow(ConfigFlow, domain=DOMAIN):
         except BlancoUnitAuthenticationError as err:
             _LOGGER.warning("Authentication failed during validation: %s", err)
             return ValidationResult({CONF_ERROR: "error_invalid_authentication"})
-        except BlancoUnitConnectionError as err:
-            _LOGGER.error("Connection error during validation: %s", err)
+        except BleakNotFoundError as err:
+            _LOGGER.error("Device not found / unreachable: %s", err)
             return ValidationResult(
-                errors={CONF_ERROR: "error_connection"},
+                errors={CONF_ERROR: "error_device_unreachable"},
                 description_placeholders={"error": str(err)},
             )
-        except TimeoutError as err:
-            _LOGGER.error("Timeout during validation: %s", err)
+        except (
+            BlancoUnitConnectionError,
+            BleakConnectionError,
+            BleakError,
+            TimeoutError,
+        ) as err:
+            _LOGGER.error(
+                "Communication error during validation: %s: %s",
+                type(err).__name__,
+                err,
+            )
             return ValidationResult(
                 errors={CONF_ERROR: "error_connection"},
-                description_placeholders={"error": str(err)},
+                description_placeholders={"error": f"{type(err).__name__}: {err}"},
             )
         except Exception as err:
             _LOGGER.exception("Unexpected error during validation")
             return ValidationResult(
                 errors={CONF_ERROR: "error_unknown"},
-                description_placeholders={"error": str(err)},
+                description_placeholders={"error": f"{type(err).__name__}: {err}"},
             )
         finally:
             # Always disconnect the client
