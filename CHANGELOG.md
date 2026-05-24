@@ -1,3 +1,9 @@
+## [1.2.1](https://github.com/alexhaller/blanco_unit/compare/v1.2.0...v1.2.1) (2026-05-24)
+
+### Bug Fixes
+
+* size protocol chunks to negotiated ATT MTU ([7839da4](https://github.com/alexhaller/blanco_unit/commit/7839da45b87d46154c6cb6c504da0f0a3d10f81d))
+
 ## [1.2.0](https://github.com/alexhaller/blanco_unit/compare/v1.1.3...v1.2.0) (2026-05-23)
 
 ### Features
