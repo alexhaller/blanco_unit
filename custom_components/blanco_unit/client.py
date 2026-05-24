@@ -1034,6 +1034,10 @@ async def _protocol_for_client(client: BleakClient) -> _BlancoUnitProtocol:
     The protocol's MTU is the total write packet size; it must be at most
     ATT MTU - 3 (3 bytes for the ATT write header).
     """
+    # Ensure GATT service discovery is complete before any characteristic operations.
+    # BleakClientWithServiceCache may have an empty or stale cache; get_services()
+    # forces discovery if the cache is missing and is a no-op if already populated.
+    await client.get_services()
     att_mtu = await _negotiate_mtu(client)
     protocol_mtu = min(MTU_SIZE, att_mtu - 3)
     # Need at least 6 bytes for the 5-byte first-packet header + 1 payload byte
