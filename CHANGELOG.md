@@ -1,3 +1,9 @@
+## [1.2.2](https://github.com/alexhaller/blanco_unit/compare/v1.2.1...v1.2.2) (2026-05-24)
+
+### Bug Fixes
+
+* map BleakNotFoundError and other bleak errors to clearer messages ([25c1ea6](https://github.com/alexhaller/blanco_unit/commit/25c1ea6cf80ea69889caf0b8f3016d07e91c609c))
+
 ## [1.2.1](https://github.com/alexhaller/blanco_unit/compare/v1.2.0...v1.2.1) (2026-05-24)
 
 ### Bug Fixes
