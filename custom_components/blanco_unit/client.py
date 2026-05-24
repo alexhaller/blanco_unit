@@ -550,8 +550,8 @@ class BlancoUnitBluetoothClient:
                 timeout=120,
             )
 
-            # Create protocol instance for this session
-            protocol = _BlancoUnitProtocol(mtu=MTU_SIZE)
+            # Create protocol instance sized to the negotiated ATT MTU
+            protocol = _protocol_for_client(client)
 
             # Perform initial pairing
             result = await self._perform_pairing(client, protocol)
@@ -1001,6 +1001,33 @@ def _extract_device_type(response: dict[str, Any]) -> int | None:
     return None
 
 
+def _protocol_for_client(client: BleakClient) -> _BlancoUnitProtocol:
+    """Create a protocol sized to fit the client's negotiated ATT MTU.
+
+    The protocol's MTU is the total write packet size; it must be at most
+    ATT MTU - 3 (3 bytes for the ATT write header).
+    """
+    att_mtu = getattr(client, "mtu_size", None) or 23
+    protocol_mtu = min(MTU_SIZE, att_mtu - 3)
+    # Need at least 6 bytes for the 5-byte first-packet header + 1 payload byte
+    protocol_mtu = max(6, protocol_mtu)
+    _LOGGER.debug(
+        "ATT MTU=%d, protocol chunk size=%d (target=%d)",
+        att_mtu,
+        protocol_mtu,
+        MTU_SIZE,
+    )
+    if protocol_mtu < MTU_SIZE:
+        _LOGGER.warning(
+            "Negotiated ATT MTU (%d) is smaller than the protocol target (%d); "
+            "using %d-byte chunks. Larger MTU may improve reliability.",
+            att_mtu,
+            MTU_SIZE,
+            protocol_mtu,
+        )
+    return _BlancoUnitProtocol(mtu=protocol_mtu)
+
+
 async def validate_pin(
     client: BleakClient, pin: str, protocol: _BlancoUnitProtocol | None = None
 ) -> PinValidationResult:
@@ -1029,9 +1056,9 @@ async def validate_pin(
 
     _LOGGER.debug("Validating PIN %s", pin)
 
-    # Use provided protocol or create new one
+    # Use provided protocol or create one sized to the negotiated ATT MTU
     if protocol is None:
-        protocol = _BlancoUnitProtocol(mtu=MTU_SIZE)
+        protocol = _protocol_for_client(client)
 
     # Send pairing request and get response
     response = await protocol.send_pairing_request(client, pin)
