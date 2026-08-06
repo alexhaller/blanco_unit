@@ -49,6 +49,7 @@ def mock_bleak_client():
     """Create a mock Bleak client."""
     client = AsyncMock()
     client.is_connected = True
+    client.mtu_size = 517
     client.disconnect = AsyncMock()
     return client
 
@@ -122,7 +123,9 @@ async def test_user_flow_already_configured(hass: HomeAssistant) -> None:
         ),
         patch(
             "custom_components.blanco_unit.config_flow.establish_connection",
-            return_value=AsyncMock(is_connected=True, disconnect=AsyncMock()),
+            return_value=AsyncMock(
+                is_connected=True, mtu_size=517, disconnect=AsyncMock()
+            ),
         ),
         patch(
             "custom_components.blanco_unit.config_flow.bluetooth.async_ble_device_from_address",

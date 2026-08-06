@@ -784,6 +784,7 @@ def test_bluetooth_client_is_connected_when_connected():
     # Mock session data with connected client
     mock_client = AsyncMock()
     mock_client.is_connected = True
+    mock_client.mtu_size = 517
     mock_protocol = MagicMock()
     client._session_data = _BlancoUnitSessionData(
         client=mock_client, dev_id="device123", dev_type=1, protocol=mock_protocol
@@ -844,6 +845,7 @@ async def test_bluetooth_client_connect_first_time(mock_establish):
     # Mock establish_connection
     mock_ble_client = AsyncMock()
     mock_ble_client.is_connected = True
+    mock_ble_client.mtu_size = 517
     mock_establish.return_value = mock_ble_client
 
     # Mock pairing response
@@ -1016,6 +1018,7 @@ async def test_bluetooth_client_execute_transaction_success(mock_establish):
     # Mock establish_connection
     mock_ble_client = AsyncMock()
     mock_ble_client.is_connected = True
+    mock_ble_client.mtu_size = 517
     mock_establish.return_value = mock_ble_client
 
     # Mock pairing response
@@ -1068,6 +1071,7 @@ async def test_bluetooth_client_execute_transaction_auth_error(mock_establish):
     # Mock establish_connection
     mock_ble_client = AsyncMock()
     mock_ble_client.is_connected = True
+    mock_ble_client.mtu_size = 517
     mock_establish.return_value = mock_ble_client
 
     # Mock pairing response
@@ -1119,6 +1123,7 @@ async def test_bluetooth_client_get_system_info(mock_establish):
     # Mock establish_connection
     mock_ble_client = AsyncMock()
     mock_ble_client.is_connected = True
+    mock_ble_client.mtu_size = 517
     mock_establish.return_value = mock_ble_client
 
     # Mock responses
@@ -1183,6 +1188,7 @@ async def test_bluetooth_client_get_settings(mock_establish):
     # Mock establish_connection
     mock_ble_client = AsyncMock()
     mock_ble_client.is_connected = True
+    mock_ble_client.mtu_size = 517
     mock_establish.return_value = mock_ble_client
 
     # Mock responses
@@ -1249,6 +1255,7 @@ async def test_bluetooth_client_get_status(mock_establish):
     # Mock establish_connection
     mock_ble_client = AsyncMock()
     mock_ble_client.is_connected = True
+    mock_ble_client.mtu_size = 517
     mock_establish.return_value = mock_ble_client
 
     # Mock responses
@@ -1316,6 +1323,7 @@ async def test_bluetooth_client_get_device_identity(mock_establish):
     # Mock establish_connection
     mock_ble_client = AsyncMock()
     mock_ble_client.is_connected = True
+    mock_ble_client.mtu_size = 517
     mock_establish.return_value = mock_ble_client
 
     # Mock responses
@@ -1365,6 +1373,7 @@ async def test_bluetooth_client_get_wifi_info(mock_establish):
     # Mock establish_connection
     mock_ble_client = AsyncMock()
     mock_ble_client.is_connected = True
+    mock_ble_client.mtu_size = 517
     mock_establish.return_value = mock_ble_client
 
     # Mock responses
@@ -1432,6 +1441,7 @@ async def test_bluetooth_client_set_temperature_success(mock_establish):
     # Mock establish_connection
     mock_ble_client = AsyncMock()
     mock_ble_client.is_connected = True
+    mock_ble_client.mtu_size = 517
     mock_establish.return_value = mock_ble_client
 
     # Mock responses
@@ -1506,6 +1516,7 @@ async def test_bluetooth_client_set_water_hardness_success(mock_establish):
     # Mock establish_connection
     mock_ble_client = AsyncMock()
     mock_ble_client.is_connected = True
+    mock_ble_client.mtu_size = 517
     mock_establish.return_value = mock_ble_client
 
     # Mock responses
@@ -1552,6 +1563,7 @@ async def test_bluetooth_client_change_pin_success(mock_establish):
     # Mock establish_connection
     mock_ble_client = AsyncMock()
     mock_ble_client.is_connected = True
+    mock_ble_client.mtu_size = 517
     mock_establish.return_value = mock_ble_client
 
     # Mock responses
@@ -1599,6 +1611,7 @@ async def test_bluetooth_client_change_pin_failure(mock_establish):
     # Mock establish_connection
     mock_ble_client = AsyncMock()
     mock_ble_client.is_connected = True
+    mock_ble_client.mtu_size = 517
     mock_establish.return_value = mock_ble_client
 
     # Mock responses
@@ -1646,6 +1659,7 @@ async def test_bluetooth_client_dispense_water_success(mock_establish):
     # Mock establish_connection
     mock_ble_client = AsyncMock()
     mock_ble_client.is_connected = True
+    mock_ble_client.mtu_size = 517
     mock_establish.return_value = mock_ble_client
 
     # Mock responses
@@ -1720,6 +1734,7 @@ async def test_bluetooth_client_set_calibration_still(mock_establish):
     # Mock establish_connection
     mock_ble_client = AsyncMock()
     mock_ble_client.is_connected = True
+    mock_ble_client.mtu_size = 517
     mock_establish.return_value = mock_ble_client
 
     # Mock responses
@@ -1766,6 +1781,7 @@ async def test_bluetooth_client_set_calibration_soda(mock_establish):
     # Mock establish_connection
     mock_ble_client = AsyncMock()
     mock_ble_client.is_connected = True
+    mock_ble_client.mtu_size = 517
     mock_establish.return_value = mock_ble_client
 
     # Mock responses
@@ -1874,6 +1890,7 @@ async def test_bluetooth_client_scan_wifi_networks(mock_establish):
     # Mock establish_connection
     mock_ble_client = AsyncMock()
     mock_ble_client.is_connected = True
+    mock_ble_client.mtu_size = 517
     mock_establish.return_value = mock_ble_client
 
     # Mock responses
@@ -1933,6 +1950,7 @@ async def test_bluetooth_client_scan_wifi_networks_empty(mock_establish):
     # Mock establish_connection
     mock_ble_client = AsyncMock()
     mock_ble_client.is_connected = True
+    mock_ble_client.mtu_size = 517
     mock_establish.return_value = mock_ble_client
 
     # Mock responses
@@ -1980,6 +1998,7 @@ async def test_bluetooth_client_connect_wifi_success(mock_establish):
     # Mock establish_connection
     mock_ble_client = AsyncMock()
     mock_ble_client.is_connected = True
+    mock_ble_client.mtu_size = 517
     mock_establish.return_value = mock_ble_client
 
     # Mock responses
@@ -2026,6 +2045,7 @@ async def test_bluetooth_client_disconnect_wifi_success(mock_establish):
     # Mock establish_connection
     mock_ble_client = AsyncMock()
     mock_ble_client.is_connected = True
+    mock_ble_client.mtu_size = 517
     mock_establish.return_value = mock_ble_client
 
     # Mock responses
@@ -2072,6 +2092,7 @@ async def test_bluetooth_client_allow_cloud_services_success(mock_establish):
     # Mock establish_connection
     mock_ble_client = AsyncMock()
     mock_ble_client.is_connected = True
+    mock_ble_client.mtu_size = 517
     mock_establish.return_value = mock_ble_client
 
     # Mock responses
@@ -2118,6 +2139,7 @@ async def test_bluetooth_client_allow_cloud_services_with_rca_id(mock_establish)
     # Mock establish_connection
     mock_ble_client = AsyncMock()
     mock_ble_client.is_connected = True
+    mock_ble_client.mtu_size = 517
     mock_establish.return_value = mock_ble_client
 
     # Mock responses
@@ -2164,6 +2186,7 @@ async def test_bluetooth_client_factory_reset_success(mock_establish):
     # Mock establish_connection
     mock_ble_client = AsyncMock()
     mock_ble_client.is_connected = True
+    mock_ble_client.mtu_size = 517
     mock_establish.return_value = mock_ble_client
 
     # Mock responses

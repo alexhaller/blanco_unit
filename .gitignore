@@ -1,2 +1,12 @@
 **/__pycache__
 .DS_Store
+
+# Tool caches
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.coverage
+
+# Editor / assistant local state
+.claude/
+.vscode/

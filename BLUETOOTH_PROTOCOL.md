@@ -86,20 +86,15 @@ The first request after connection is a pairing request (event type 10) that val
 
 ```python
 {
-  "session": 1234567,
-  "id": 9876543,
-  "type": 1,
-  "token": "calculated_sha256_token",
-  "salt": "12345679876543",
-  "body": {
-    "meta": {
-      "evt_type": 10,
-      "dev_type": 1,
-      "evt_ver": 1,
-      "evt_ts": 1704123456789
+    "session": 1234567,
+    "id": 9876543,
+    "type": 1,
+    "token": "calculated_sha256_token",
+    "salt": "12345679876543",
+    "body": {
+        "meta": {"evt_type": 10, "dev_type": 1, "evt_ver": 1, "evt_ts": 1704123456789},
+        "pars": {},
     },
-    "pars": {}
-  }
 }
 ```
 
@@ -1272,9 +1267,9 @@ Calculate authentication token from PIN and salt.
 **Implementation:**
 
 ```python
-pin_hash = hashlib.sha256(pin.encode('utf-8')).hexdigest()
+pin_hash = hashlib.sha256(pin.encode("utf-8")).hexdigest()
 combined = pin_hash + salt
-token = hashlib.sha256(combined.encode('utf-8')).hexdigest()
+token = hashlib.sha256(combined.encode("utf-8")).hexdigest()
 ```
 
 ### Read Operations
@@ -1510,11 +1505,11 @@ Perform full software reset.
 ```python
 @dataclass
 class BlancoUnitSystemInfo:
-    sw_ver_comm_con: str      # Communication controller firmware
-    sw_ver_elec_con: str      # Electronic controller firmware
-    sw_ver_main_con: str      # Main controller firmware
-    dev_name: str             # Device name
-    reset_cnt: int            # Reset count
+    sw_ver_comm_con: str  # Communication controller firmware
+    sw_ver_elec_con: str  # Electronic controller firmware
+    sw_ver_main_con: str  # Main controller firmware
+    dev_name: str  # Device name
+    reset_cnt: int  # Reset count
 ```
 
 ### BlancoUnitSettings
@@ -1522,17 +1517,17 @@ class BlancoUnitSystemInfo:
 ```python
 @dataclass
 class BlancoUnitSettings:
-    calib_still_wtr: int      # Still water calibration (1-10)
-    calib_soda_wtr: int       # Soda water calibration (1-10)
-    filter_life_tm: int       # Filter lifetime (days)
+    calib_still_wtr: int  # Still water calibration (1-10)
+    calib_soda_wtr: int  # Soda water calibration (1-10)
+    filter_life_tm: int  # Filter lifetime (days)
     post_flush_quantity: int  # Post-flush quantity (mL)
-    set_point_cooling: int    # Temperature setting (4-10°C)
-    wtr_hardness: int         # Water hardness level (1-9)
+    set_point_cooling: int  # Temperature setting (4-10°C)
+    wtr_hardness: int  # Water hardness level (1-9)
     # CHOICE.All specific fields (default to 0 for drink.soda)
-    set_point_heating: int = 0       # Heating setpoint (60-100°C)
-    calib_hot_wtr: int = 0           # Hot water calibration (mL)
+    set_point_heating: int = 0  # Heating setpoint (60-100°C)
+    calib_hot_wtr: int = 0  # Hot water calibration (mL)
     gbl_medium_wtr_ratio: float = 0.0  # Medium carbonation water ratio
-    gbl_classic_wtr_ratio: float = 0.0 # Classic carbonation water ratio
+    gbl_classic_wtr_ratio: float = 0.0  # Classic carbonation water ratio
 ```
 
 ### BlancoUnitStatus
@@ -1540,20 +1535,20 @@ class BlancoUnitSettings:
 ```python
 @dataclass
 class BlancoUnitStatus:
-    tap_state: int            # Tap state code
-    filter_rest: int          # Filter remaining (0-100%)
-    co2_rest: int             # CO2 remaining (0-100%)
-    wtr_disp_active: bool     # Water dispensing active
-    firm_upd_avlb: bool       # Firmware update available
-    set_point_cooling: int    # Current temperature
-    clean_mode_state: int     # Cleaning mode state
-    err_bits: int             # Error bits
+    tap_state: int  # Tap state code
+    filter_rest: int  # Filter remaining (0-100%)
+    co2_rest: int  # CO2 remaining (0-100%)
+    wtr_disp_active: bool  # Water dispensing active
+    firm_upd_avlb: bool  # Firmware update available
+    set_point_cooling: int  # Current temperature
+    clean_mode_state: int  # Cleaning mode state
+    err_bits: int  # Error bits
     # CHOICE.All specific fields (default to 0 for drink.soda)
-    temp_boil_1: int = 0              # Boiler temperature sensor 1 (°C)
-    temp_boil_2: int = 0              # Boiler temperature sensor 2 (°C)
-    temp_comp: int = 0                # Compressor/condenser temperature (°C)
-    main_controller_status: int = 0   # Main controller status bitmask
-    conn_controller_status: int = 0   # Connection controller status
+    temp_boil_1: int = 0  # Boiler temperature sensor 1 (°C)
+    temp_boil_2: int = 0  # Boiler temperature sensor 2 (°C)
+    temp_comp: int = 0  # Compressor/condenser temperature (°C)
+    main_controller_status: int = 0  # Main controller status bitmask
+    conn_controller_status: int = 0  # Connection controller status
 ```
 
 ### BlancoUnitIdentity
@@ -1561,8 +1556,8 @@ class BlancoUnitStatus:
 ```python
 @dataclass
 class BlancoUnitIdentity:
-    serial_no: str            # Serial number
-    service_code: str         # Service code
+    serial_no: str  # Serial number
+    service_code: str  # Service code
 ```
 
 ### BlancoUnitWifiInfo
@@ -1570,15 +1565,15 @@ class BlancoUnitIdentity:
 ```python
 @dataclass
 class BlancoUnitWifiInfo:
-    cloud_connect: bool       # Cloud connection status
-    ssid: str                 # WiFi SSID
-    signal: int               # Signal strength (dBm)
-    ip: str                   # IP address
-    ble_mac: str              # Bluetooth MAC address
-    wifi_mac: str             # WiFi MAC address
-    gateway: str              # Gateway IP
-    gateway_mac: str          # Gateway MAC address
-    subnet: str               # Subnet mask
+    cloud_connect: bool  # Cloud connection status
+    ssid: str  # WiFi SSID
+    signal: int  # Signal strength (dBm)
+    ip: str  # IP address
+    ble_mac: str  # Bluetooth MAC address
+    wifi_mac: str  # WiFi MAC address
+    gateway: str  # Gateway IP
+    gateway_mac: str  # Gateway MAC address
+    subnet: str  # Subnet mask
 ```
 
 ### BlancoUnitWifiNetwork
@@ -1586,9 +1581,9 @@ class BlancoUnitWifiInfo:
 ```python
 @dataclass
 class BlancoUnitWifiNetwork:
-    ssid: str        # WiFi network name
-    signal: int      # Signal strength (0-100)
-    auth_mode: int   # Authentication mode (3 = WPA/WPA2)
+    ssid: str  # WiFi network name
+    signal: int  # Signal strength (0-100)
+    auth_mode: int  # Authentication mode (3 = WPA/WPA2)
 ```
 
 ## Error Handling

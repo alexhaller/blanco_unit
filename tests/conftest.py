@@ -128,6 +128,7 @@ def mock_bleak_client_fixture():
 
     client = AsyncMock()
     client.is_connected = True
+    client.mtu_size = 517
     client.disconnect = AsyncMock()
     return client
 

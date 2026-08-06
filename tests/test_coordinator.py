@@ -49,6 +49,7 @@ def mock_client():
     client = MagicMock()
     client.device_id = "test_device_id"
     client.is_connected = True
+    client.mtu_size = 517
     client.get_system_info = AsyncMock(
         return_value=BlancoUnitSystemInfo(
             sw_ver_comm_con="1.0.0",
@@ -202,6 +203,7 @@ async def test_coordinator_unavailable_callback(
     ):
         mock_client = MagicMock()
         mock_client.is_connected = True
+        mock_client.mtu_size = 517
         mock_client_class.return_value = mock_client
 
         coordinator = BlancoUnitCoordinator(

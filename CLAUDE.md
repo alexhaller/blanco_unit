@@ -5,6 +5,7 @@
 Home Assistant custom integration for Blanco water dispensers communicating over BLE (Bluetooth Low Energy, characteristic UUID `3b531d4d-ed58-4677-b2fa-1c72a86082cf`). Do not switch the transport — the protocol is BLE-only.
 
 - GitHub: https://github.com/Nailik/blanco_unit
+- Project forked from: https://github.com/Nailik/blanco_unit
 
 Key files:
 - `custom_components/blanco_unit/client.py` — `BlancoUnitBluetoothClient`; BLE request/response flow uses notifications, not read
@@ -15,6 +16,6 @@ Key files:
 
 ## Project-specific notes
 
-- **Domain**: `blanco_unit`; pip-audit packages: `bleak>=0.21.1`
+- **Domain**: `blanco_unit`; `requirements: []` — `bleak` and `bleak-retry-connector` are pinned by HA core and provided by the `bluetooth` dependency, so they are deliberately not listed
 - **Random MAC support**: devices with randomized MAC are tracked by service UUID instead of address — `RANDOM_MAC_PLACEHOLDER` sentinel in config entry data signals this path
 - **`.releaserc.json`** `prepareCmd` path: `custom_components/blanco_unit/manifest.json`

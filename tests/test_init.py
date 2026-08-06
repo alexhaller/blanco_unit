@@ -517,6 +517,7 @@ async def test_find_device_by_scanning_match_found(hass: HomeAssistant) -> None:
 
     mock_client = AsyncMock()
     mock_client.is_connected = True
+    mock_client.mtu_size = 517
     mock_client.disconnect = AsyncMock()
 
     with (
@@ -578,6 +579,7 @@ async def test_find_device_by_scanning_filters_by_uuid(hass: HomeAssistant) -> N
 
     mock_client = AsyncMock()
     mock_client.is_connected = True
+    mock_client.mtu_size = 517
     mock_client.disconnect = AsyncMock()
 
     with (
@@ -608,6 +610,7 @@ async def test_find_device_by_scanning_auth_failure(hass: HomeAssistant) -> None
 
     mock_client = AsyncMock()
     mock_client.is_connected = True
+    mock_client.mtu_size = 517
     mock_client.disconnect = AsyncMock()
 
     with (
@@ -639,6 +642,7 @@ async def test_find_device_by_scanning_dev_id_mismatch(hass: HomeAssistant) -> N
 
     mock_client = AsyncMock()
     mock_client.is_connected = True
+    mock_client.mtu_size = 517
     mock_client.disconnect = AsyncMock()
 
     with (
@@ -679,6 +683,7 @@ async def test_find_device_by_scanning_connection_failure_skipped(
 
     mock_client_ok = AsyncMock()
     mock_client_ok.is_connected = True
+    mock_client_ok.mtu_size = 517
     mock_client_ok.disconnect = AsyncMock()
 
     call_count = 0
@@ -728,6 +733,7 @@ async def test_find_device_by_scanning_sorts_by_rssi(hass: HomeAssistant) -> Non
 
     mock_client = AsyncMock()
     mock_client.is_connected = True
+    mock_client.mtu_size = 517
     mock_client.disconnect = AsyncMock()
 
     tried_addresses = []
