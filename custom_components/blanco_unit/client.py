@@ -1001,31 +1001,26 @@ def _extract_device_type(response: dict[str, Any]) -> int | None:
     return None
 
 
-async def _negotiate_mtu(client: BleakClient) -> int:
-    """Trigger ATT MTU negotiation on the BlueZ backend if needed.
+async def _negotiate_mtu(client: BleakClient) -> tuple[int, str | None]:
+    """Return the ATT MTU and, if it could not be acquired, why.
 
-    Returns the negotiated ATT MTU. BlueZ does not always auto-negotiate
-    on connect; calling the backend's _acquire_mtu() forces it.
+    BlueZ does not perform the MTU exchange on connect; the backend only
+    learns the real value once _acquire_mtu() has run. Reading mtu_size before
+    that emits bleak's "Using default MTU value" UserWarning and reports the
+    23-byte minimum, so acquire first and read the property afterwards.
     """
-    mtu = getattr(client, "mtu_size", None) or 23
-    if mtu > 23:
-        return mtu
-
     backend = getattr(client, "_backend", None)
-    acquire = getattr(backend, "_acquire_mtu", None) if backend else None
-    if acquire is None:
-        return mtu
+    acquire = getattr(backend, "_acquire_mtu", None)
 
-    try:
-        await acquire()
-    except Exception as err:  # noqa: BLE001
-        _LOGGER.debug("MTU negotiation failed (continuing with %d): %r", mtu, err)
-        return mtu
+    # Acquire first, then read. Backends that do not expose _acquire_mtu (an
+    # ESPHome proxy, for instance) already know their MTU and never warn.
+    if acquire is not None and getattr(backend, "_mtu_size", None) is None:
+        try:
+            await acquire()
+        except Exception as err:  # noqa: BLE001 - a failure only costs throughput
+            return 23, repr(err)
 
-    new_mtu = getattr(client, "mtu_size", None) or mtu
-    if new_mtu != mtu:
-        _LOGGER.debug("MTU negotiated: %d -> %d", mtu, new_mtu)
-    return new_mtu
+    return (getattr(client, "mtu_size", None) or 23), None
 
 
 async def _protocol_for_client(client: BleakClient) -> _BlancoUnitProtocol:
@@ -1039,7 +1034,7 @@ async def _protocol_for_client(client: BleakClient) -> _BlancoUnitProtocol:
     # property raises BleakError if it has not happened, so reading it here
     # still fails fast on a client whose service cache never resolved.
     _LOGGER.debug("GATT services resolved: %d", len(client.services.services))
-    att_mtu = await _negotiate_mtu(client)
+    att_mtu, mtu_error = await _negotiate_mtu(client)
     protocol_mtu = min(MTU_SIZE, att_mtu - 3)
     # Need at least 6 bytes for the 5-byte first-packet header + 1 payload byte
     protocol_mtu = max(6, protocol_mtu)
@@ -1050,12 +1045,17 @@ async def _protocol_for_client(client: BleakClient) -> _BlancoUnitProtocol:
         MTU_SIZE,
     )
     if protocol_mtu < MTU_SIZE:
+        # One warning carrying the cause, rather than a bare symptom the user
+        # can only explain by turning on debug logging.
         _LOGGER.warning(
             "Negotiated ATT MTU (%d) is smaller than the protocol target (%d); "
-            "using %d-byte chunks. Larger MTU may improve reliability.",
+            "using %d-byte chunks. Transfers still work but are slower. %s",
             att_mtu,
             MTU_SIZE,
             protocol_mtu,
+            f"Acquiring the MTU failed: {mtu_error}"
+            if mtu_error
+            else "The adapter reported this MTU without an error.",
         )
     return _BlancoUnitProtocol(mtu=protocol_mtu)
 
