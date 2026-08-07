@@ -1,14 +1,15 @@
 # serializer version: 1
 # name: test_all_entities[number.test_blanco_unit_soda_water_calibration-entry]
   EntityRegistryEntrySnapshot({
-    'aliases': set({
-    }),
+    'aliases': list([
+      None,
+    ]),
     'area_id': None,
     'capabilities': dict({
-      'max': 1000,
-      'min': 1,
-      'mode': <NumberMode.BOX: 'box'>,
-      'step': 1,
+      <NumberEntityCapabilityAttribute.MAX: 'max'>: 1000,
+      <NumberEntityCapabilityAttribute.MIN: 'min'>: 1,
+      <NumberEntityCapabilityAttribute.MODE: 'mode'>: <NumberMode.BOX: 'box'>,
+      <NumberEntityCapabilityAttribute.STEP: 'step'>: 1,
     }),
     'config_entry_id': <ANY>,
     'config_subentry_id': <ANY>,
@@ -25,6 +26,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Soda Water Calibration',
     'options': dict({
     }),
     'original_device_class': None,
@@ -42,13 +44,13 @@
 # name: test_all_entities[number.test_blanco_unit_soda_water_calibration-state]
   StateSnapshot({
     'attributes': ReadOnlyDict({
-      'friendly_name': 'Test Blanco Unit Soda Water Calibration',
-      'icon': 'mdi:cup-water',
-      'max': 1000,
-      'min': 1,
-      'mode': <NumberMode.BOX: 'box'>,
-      'step': 1,
-      'unit_of_measurement': 'mL',
+      <EntityStateAttribute.FRIENDLY_NAME: 'friendly_name'>: 'Test Blanco Unit Soda Water Calibration',
+      <EntityStateAttribute.ICON: 'icon'>: 'mdi:cup-water',
+      <NumberEntityCapabilityAttribute.MAX: 'max'>: 1000,
+      <NumberEntityCapabilityAttribute.MIN: 'min'>: 1,
+      <NumberEntityCapabilityAttribute.MODE: 'mode'>: <NumberMode.BOX: 'box'>,
+      <NumberEntityCapabilityAttribute.STEP: 'step'>: 1,
+      <EntityStateAttribute.UNIT_OF_MEASUREMENT: 'unit_of_measurement'>: 'mL',
     }),
     'context': <ANY>,
     'entity_id': 'number.test_blanco_unit_soda_water_calibration',
@@ -60,14 +62,15 @@
 # ---
 # name: test_all_entities[number.test_blanco_unit_still_water_calibration-entry]
   EntityRegistryEntrySnapshot({
-    'aliases': set({
-    }),
+    'aliases': list([
+      None,
+    ]),
     'area_id': None,
     'capabilities': dict({
-      'max': 1000,
-      'min': 1,
-      'mode': <NumberMode.BOX: 'box'>,
-      'step': 1,
+      <NumberEntityCapabilityAttribute.MAX: 'max'>: 1000,
+      <NumberEntityCapabilityAttribute.MIN: 'min'>: 1,
+      <NumberEntityCapabilityAttribute.MODE: 'mode'>: <NumberMode.BOX: 'box'>,
+      <NumberEntityCapabilityAttribute.STEP: 'step'>: 1,
     }),
     'config_entry_id': <ANY>,
     'config_subentry_id': <ANY>,
@@ -84,6 +87,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Still Water Calibration',
     'options': dict({
     }),
     'original_device_class': None,
@@ -101,13 +105,13 @@
 # name: test_all_entities[number.test_blanco_unit_still_water_calibration-state]
   StateSnapshot({
     'attributes': ReadOnlyDict({
-      'friendly_name': 'Test Blanco Unit Still Water Calibration',
-      'icon': 'mdi:water',
-      'max': 1000,
-      'min': 1,
-      'mode': <NumberMode.BOX: 'box'>,
-      'step': 1,
-      'unit_of_measurement': 'mL',
+      <EntityStateAttribute.FRIENDLY_NAME: 'friendly_name'>: 'Test Blanco Unit Still Water Calibration',
+      <EntityStateAttribute.ICON: 'icon'>: 'mdi:water',
+      <NumberEntityCapabilityAttribute.MAX: 'max'>: 1000,
+      <NumberEntityCapabilityAttribute.MIN: 'min'>: 1,
+      <NumberEntityCapabilityAttribute.MODE: 'mode'>: <NumberMode.BOX: 'box'>,
+      <NumberEntityCapabilityAttribute.STEP: 'step'>: 1,
+      <EntityStateAttribute.UNIT_OF_MEASUREMENT: 'unit_of_measurement'>: 'mL',
     }),
     'context': <ANY>,
     'entity_id': 'number.test_blanco_unit_still_water_calibration',

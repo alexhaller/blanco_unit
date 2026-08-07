@@ -1,8 +1,9 @@
 # serializer version: 1
 # name: test_all_entities[binary_sensor.test_blanco_unit_ble_connection-entry]
   EntityRegistryEntrySnapshot({
-    'aliases': set({
-    }),
+    'aliases': list([
+      None,
+    ]),
     'area_id': None,
     'capabilities': None,
     'config_entry_id': <ANY>,
@@ -20,6 +21,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'BLE Connection',
     'options': dict({
     }),
     'original_device_class': <BinarySensorDeviceClass.CONNECTIVITY: 'connectivity'>,
@@ -37,9 +39,9 @@
 # name: test_all_entities[binary_sensor.test_blanco_unit_ble_connection-state]
   StateSnapshot({
     'attributes': ReadOnlyDict({
-      'device_class': 'connectivity',
-      'friendly_name': 'Test Blanco Unit BLE Connection',
-      'icon': 'mdi:bluetooth-connect',
+      <EntityStateAttribute.DEVICE_CLASS: 'device_class'>: 'connectivity',
+      <EntityStateAttribute.FRIENDLY_NAME: 'friendly_name'>: 'Test Blanco Unit BLE Connection',
+      <EntityStateAttribute.ICON: 'icon'>: 'mdi:bluetooth-connect',
     }),
     'context': <ANY>,
     'entity_id': 'binary_sensor.test_blanco_unit_ble_connection',
@@ -51,8 +53,9 @@
 # ---
 # name: test_all_entities[binary_sensor.test_blanco_unit_cloud_connection-entry]
   EntityRegistryEntrySnapshot({
-    'aliases': set({
-    }),
+    'aliases': list([
+      None,
+    ]),
     'area_id': None,
     'capabilities': None,
     'config_entry_id': <ANY>,
@@ -70,6 +73,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Cloud Connection',
     'options': dict({
     }),
     'original_device_class': <BinarySensorDeviceClass.CONNECTIVITY: 'connectivity'>,
@@ -87,9 +91,9 @@
 # name: test_all_entities[binary_sensor.test_blanco_unit_cloud_connection-state]
   StateSnapshot({
     'attributes': ReadOnlyDict({
-      'device_class': 'connectivity',
-      'friendly_name': 'Test Blanco Unit Cloud Connection',
-      'icon': 'mdi:cloud',
+      <EntityStateAttribute.DEVICE_CLASS: 'device_class'>: 'connectivity',
+      <EntityStateAttribute.FRIENDLY_NAME: 'friendly_name'>: 'Test Blanco Unit Cloud Connection',
+      <EntityStateAttribute.ICON: 'icon'>: 'mdi:cloud',
     }),
     'context': <ANY>,
     'entity_id': 'binary_sensor.test_blanco_unit_cloud_connection',
@@ -101,8 +105,9 @@
 # ---
 # name: test_all_entities[binary_sensor.test_blanco_unit_firmware_update_available-entry]
   EntityRegistryEntrySnapshot({
-    'aliases': set({
-    }),
+    'aliases': list([
+      None,
+    ]),
     'area_id': None,
     'capabilities': None,
     'config_entry_id': <ANY>,
@@ -120,6 +125,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Firmware Update Available',
     'options': dict({
     }),
     'original_device_class': <BinarySensorDeviceClass.UPDATE: 'update'>,
@@ -137,9 +143,9 @@
 # name: test_all_entities[binary_sensor.test_blanco_unit_firmware_update_available-state]
   StateSnapshot({
     'attributes': ReadOnlyDict({
-      'device_class': 'update',
-      'friendly_name': 'Test Blanco Unit Firmware Update Available',
-      'icon': 'mdi:update',
+      <EntityStateAttribute.DEVICE_CLASS: 'device_class'>: 'update',
+      <EntityStateAttribute.FRIENDLY_NAME: 'friendly_name'>: 'Test Blanco Unit Firmware Update Available',
+      <EntityStateAttribute.ICON: 'icon'>: 'mdi:update',
     }),
     'context': <ANY>,
     'entity_id': 'binary_sensor.test_blanco_unit_firmware_update_available',
@@ -151,8 +157,9 @@
 # ---
 # name: test_all_entities[binary_sensor.test_blanco_unit_water_dispensing-entry]
   EntityRegistryEntrySnapshot({
-    'aliases': set({
-    }),
+    'aliases': list([
+      None,
+    ]),
     'area_id': None,
     'capabilities': None,
     'config_entry_id': <ANY>,
@@ -170,6 +177,7 @@
     'labels': set({
     }),
     'name': None,
+    'object_id_base': 'Water Dispensing',
     'options': dict({
     }),
     'original_device_class': None,
@@ -187,8 +195,8 @@
 # name: test_all_entities[binary_sensor.test_blanco_unit_water_dispensing-state]
   StateSnapshot({
     'attributes': ReadOnlyDict({
-      'friendly_name': 'Test Blanco Unit Water Dispensing',
-      'icon': 'mdi:water-pump',
+      <EntityStateAttribute.FRIENDLY_NAME: 'friendly_name'>: 'Test Blanco Unit Water Dispensing',
+      <EntityStateAttribute.ICON: 'icon'>: 'mdi:water-pump',
     }),
     'context': <ANY>,
     'entity_id': 'binary_sensor.test_blanco_unit_water_dispensing',
