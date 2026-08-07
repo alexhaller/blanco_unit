@@ -1,3 +1,9 @@
+## [1.2.8](https://github.com/alexhaller/blanco_unit/compare/v1.2.7...v1.2.8) (2026-08-07)
+
+### Bug Fixes
+
+* acquire the ATT MTU before reading it, and report why it failed ([26e1fbf](https://github.com/alexhaller/blanco_unit/commit/26e1fbf65ade3a4af883b7c7bb1b3a5e90dbb8e7))
+
 ## [1.2.7](https://github.com/alexhaller/blanco_unit/compare/v1.2.6...v1.2.7) (2026-08-07)
 
 ## [1.2.6](https://github.com/alexhaller/blanco_unit/compare/v1.2.5...v1.2.6) (2026-08-07)
