@@ -1,3 +1,9 @@
+## [1.2.11](https://github.com/alexhaller/blanco_unit/compare/v1.2.10...v1.2.11) (2026-08-22)
+
+### Bug Fixes
+
+* retry writes the device rejects as momentarily busy ([1192de5](https://github.com/alexhaller/blanco_unit/commit/1192de54d87da4563336aa2c41204735b9111853))
+
 ## [1.2.10](https://github.com/alexhaller/blanco_unit/compare/v1.2.9...v1.2.10) (2026-08-22)
 
 ### Bug Fixes
