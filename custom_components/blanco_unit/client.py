@@ -15,6 +15,7 @@ from typing import Any
 
 from bleak import BleakClient
 from bleak.backends.device import BLEDevice
+from bleak.exc import BleakGATTProtocolError, BleakGATTProtocolErrorCode
 from bleak_retry_connector import BleakClientWithServiceCache, establish_connection
 
 from .const import CHARACTERISTIC_UUID, MTU_SIZE
@@ -224,6 +225,20 @@ class _AllowCloudServicesPars:
 # -------------------------------
 
 
+# ATT errors that mean "not right now" rather than "never": the device was
+# busy or out of buffers. Everything else is a permanent rejection.
+_TRANSIENT_GATT_ERRORS = frozenset(
+    {
+        BleakGATTProtocolErrorCode.UNLIKELY_ERROR,
+        BleakGATTProtocolErrorCode.INSUFFICIENT_RESOURCE,
+        BleakGATTProtocolErrorCode.PREPARE_QUEUE_FULL,
+        BleakGATTProtocolErrorCode.PROCEDURE_ALREADY_IN_PROGRESS,
+    }
+)
+_WRITE_ATTEMPTS = 3
+_WRITE_RETRY_DELAY = 0.1
+
+
 class _BlancoUnitProtocol:
     """Internal protocol handler for packet creation, parsing, and communication."""
 
@@ -308,15 +323,47 @@ class _BlancoUnitProtocol:
         return pars.get("errs", [])
 
     async def _write_packets(self, client: BleakClient, packets: list[bytes]) -> None:
-        """Write all request packets to the characteristic with diagnostics."""
+        """Write all request packets to the characteristic with diagnostics.
+
+        A request is split across as many packets as the ATT MTU forces --
+        twenty or more at the 23-byte minimum -- and each one is a separate
+        write-with-response round trip. The device answers a write it is not
+        ready for with a transient ATT error rather than dropping it, so a
+        single busy moment anywhere in the sequence would otherwise fail the
+        whole request. Retry those, and only those, with a short backoff.
+        """
         for idx, packet in enumerate(packets, start=1):
-            try:
-                await client.write_gatt_char(CHARACTERISTIC_UUID, packet, response=True)
-            except Exception as err:
-                raise BlancoUnitConnectionError(
-                    f"Write failed on packet {idx}/{len(packets)} "
-                    f"({len(packet)} bytes): {err!r}"
-                ) from err
+            for attempt in range(1, _WRITE_ATTEMPTS + 1):
+                try:
+                    await client.write_gatt_char(
+                        CHARACTERISTIC_UUID, packet, response=True
+                    )
+                    break
+                except BleakGATTProtocolError as err:
+                    retryable = err.code in _TRANSIENT_GATT_ERRORS
+                    if not retryable or attempt == _WRITE_ATTEMPTS:
+                        raise BlancoUnitConnectionError(
+                            f"Write failed on packet {idx}/{len(packets)} "
+                            f"({len(packet)} bytes) after {attempt} "
+                            f"attempt(s): {err!r}"
+                        ) from err
+                    delay = _WRITE_RETRY_DELAY * attempt
+                    _LOGGER.debug(
+                        "Packet %d/%d rejected with %s; retrying in %.2f s "
+                        "(attempt %d/%d)",
+                        idx,
+                        len(packets),
+                        err.code.name,
+                        delay,
+                        attempt,
+                        _WRITE_ATTEMPTS,
+                    )
+                    await asyncio.sleep(delay)
+                except Exception as err:
+                    raise BlancoUnitConnectionError(
+                        f"Write failed on packet {idx}/{len(packets)} "
+                        f"({len(packet)} bytes): {err!r}"
+                    ) from err
 
     async def read_response_chunks(self, client: BleakClient) -> list[bytes]:
         """Read response chunks from the characteristic via polling."""
