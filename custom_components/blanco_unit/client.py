@@ -1001,8 +1001,44 @@ def _extract_device_type(response: dict[str, Any]) -> int | None:
     return None
 
 
+# Set once the small-MTU warning has been emitted, so reconnects stay quiet.
+_SMALL_MTU_WARNED = False
+
+
+def _mtu_from_bluez(client: BleakClient) -> int | None:
+    """Return the ATT MTU BlueZ publishes on a characteristic, if it does.
+
+    bleak's _acquire_mtu() only works on a device that exposes a
+    characteristic with write-without-response or notify. The Blanco Unit has
+    neither, so the second of bleak's two unguarded next() calls raises
+    StopIteration -- surfacing as "coroutine raised StopIteration" -- and the
+    MTU would stay at the 23-byte minimum.
+
+    BlueZ 5.62 and newer publish the negotiated MTU as a property on
+    GattCharacteristic1, which needs no acquire at all. bleak keeps the raw
+    D-Bus properties in characteristic.obj[1], so read it from there.
+    """
+    try:
+        characteristics = client.services.characteristics.values()
+    except Exception:  # noqa: BLE001 - no services, no MTU to read
+        return None
+
+    for char in characteristics:
+        obj = getattr(char, "obj", None)
+        if not isinstance(obj, (list, tuple)) or len(obj) < 2:
+            continue
+        props = obj[1]
+        if not isinstance(props, dict):
+            continue
+        mtu = props.get("MTU")
+        # Anything at or below the 23-byte minimum tells us nothing.
+        if isinstance(mtu, int) and mtu > 23:
+            return mtu
+    return None
+
+
 async def _negotiate_mtu(client: BleakClient) -> tuple[int, str | None]:
-    """Return the ATT MTU and, if it could not be acquired, why.
+    """Return the ATT MTU and, if it could not be determined, why.
 
     BlueZ does not perform the MTU exchange on connect; the backend only
     learns the real value once _acquire_mtu() has run. Reading mtu_size before
@@ -1018,7 +1054,16 @@ async def _negotiate_mtu(client: BleakClient) -> tuple[int, str | None]:
         try:
             await acquire()
         except Exception as err:  # noqa: BLE001 - a failure only costs throughput
-            return 23, repr(err)
+            published = _mtu_from_bluez(client)
+            if published is None:
+                return 23, repr(err)
+            _LOGGER.debug(
+                "Acquiring the MTU failed (%r); using the %d-byte MTU BlueZ "
+                "publishes on the characteristic instead",
+                err,
+                published,
+            )
+            return published, None
 
     return (getattr(client, "mtu_size", None) or 23), None
 
@@ -1045,18 +1090,24 @@ async def _protocol_for_client(client: BleakClient) -> _BlancoUnitProtocol:
         MTU_SIZE,
     )
     if protocol_mtu < MTU_SIZE:
-        # One warning carrying the cause, rather than a bare symptom the user
-        # can only explain by turning on debug logging.
-        _LOGGER.warning(
-            "Negotiated ATT MTU (%d) is smaller than the protocol target (%d); "
-            "using %d-byte chunks. Transfers still work but are slower. %s",
-            att_mtu,
-            MTU_SIZE,
-            protocol_mtu,
+        # A small MTU is a property of the adapter and the device, so it does
+        # not change between connections. Warn once and keep the repeats at
+        # debug rather than restating it on every reconnect.
+        global _SMALL_MTU_WARNED  # noqa: PLW0603
+        detail = (
             f"Acquiring the MTU failed: {mtu_error}"
             if mtu_error
-            else "The adapter reported this MTU without an error.",
+            else "The adapter reported this MTU without an error."
         )
+        message = (
+            "Negotiated ATT MTU (%d) is smaller than the protocol target (%d); "
+            "using %d-byte chunks. Transfers still work but are slower. %s"
+        )
+        if _SMALL_MTU_WARNED:
+            _LOGGER.debug(message, att_mtu, MTU_SIZE, protocol_mtu, detail)
+        else:
+            _SMALL_MTU_WARNED = True
+            _LOGGER.warning(message, att_mtu, MTU_SIZE, protocol_mtu, detail)
     return _BlancoUnitProtocol(mtu=protocol_mtu)
 
 
