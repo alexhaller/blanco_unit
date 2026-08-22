@@ -1,3 +1,9 @@
+## [1.2.10](https://github.com/alexhaller/blanco_unit/compare/v1.2.9...v1.2.10) (2026-08-22)
+
+### Bug Fixes
+
+* read the MTU BlueZ publishes when acquiring it cannot work ([f92acdf](https://github.com/alexhaller/blanco_unit/commit/f92acdfd0a924289ec5d08cd6ae07edf26f4f6d3))
+
 ## [1.2.9](https://github.com/alexhaller/blanco_unit/compare/v1.2.8...v1.2.9) (2026-08-22)
 
 ### Bug Fixes
