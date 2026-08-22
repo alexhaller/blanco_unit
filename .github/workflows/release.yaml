@@ -20,7 +20,7 @@ jobs:
       # token is never issued and ACTIONS_ID_TOKEN_REQUEST_TOKEN stays unset
       id-token: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -47,13 +47,13 @@ jobs:
 
       - name: Sign release package
         if: steps.semantic.outputs.new_release_published == 'true'
-        uses: sigstore/gh-action-sigstore-python@v3.2.0
+        uses: sigstore/gh-action-sigstore-python@v3.5.0
         with:
           inputs: ${{ github.workspace }}/custom_components/blanco_unit/blanco_unit.zip
 
       - name: Upload zip to release
         if: steps.semantic.outputs.new_release_published == 'true'
-        uses: softprops/action-gh-release@v2.5.3
+        uses: softprops/action-gh-release@v3.0.2
         with:
           tag_name: v${{ steps.semantic.outputs.new_release_version }}
           files: ${{ github.workspace }}/custom_components/blanco_unit/blanco_unit.zip

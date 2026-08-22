@@ -1,4 +1,4 @@
-homeassistant==2026.8.0
+homeassistant==2026.8.3
 pytest
 pytest-cov
 pytest-homeassistant-custom-component
