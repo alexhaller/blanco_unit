@@ -1,3 +1,9 @@
+## [1.2.9](https://github.com/alexhaller/blanco_unit/compare/v1.2.8...v1.2.9) (2026-08-22)
+
+### Bug Fixes
+
+* match the homeassistant test pin to what phcc requires ([5f6a251](https://github.com/alexhaller/blanco_unit/commit/5f6a2511a184b09bf3393cb7f2eca22f12568aac))
+
 ## [1.2.8](https://github.com/alexhaller/blanco_unit/compare/v1.2.7...v1.2.8) (2026-08-07)
 
 ### Bug Fixes
