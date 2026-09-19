@@ -1,4 +1,6 @@
-homeassistant==2026.8.3
+# homeassistant is deliberately NOT pinned here: pytest-homeassistant-custom-component
+# pins one exact HA version, and a second pin that disagrees makes pip silently
+# backtrack to an older phcc instead of failing (see 5f6a251). Let phcc own it.
 pytest
 pytest-cov
 pytest-homeassistant-custom-component

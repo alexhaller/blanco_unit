@@ -10,3 +10,4 @@
 # Editor / assistant local state
 .claude/
 .vscode/
+.venv/
