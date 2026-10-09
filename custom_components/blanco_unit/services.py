@@ -3,7 +3,7 @@
 import json
 import logging
 
-import voluptuous as vol
+import probatio
 
 from homeassistant.core import HomeAssistant, ServiceCall, SupportsResponse
 from homeassistant.exceptions import ServiceValidationError
@@ -39,61 +39,61 @@ _LOGGER = logging.getLogger(__name__)
 def _validate_amount_ml(value: int) -> int:
     """Validate amount is minimum 50."""
     if value < 50:
-        raise vol.Invalid("Amount must be at least 50ml")
+        raise probatio.Invalid("Amount must be at least 50ml")
     return value
 
 
-SERVICE_DISPENSE_WATER_SCHEMA = vol.Schema(
+SERVICE_DISPENSE_WATER_SCHEMA = probatio.Schema(
     {
-        vol.Required(HA_SERVICE_ATTR_DEVICE_ID): cv.string,
-        vol.Required(HA_SERVICE_ATTR_AMOUNT_ML): vol.All(
-            vol.Coerce(int),
-            vol.Range(min=50),
+        probatio.Required(HA_SERVICE_ATTR_DEVICE_ID): cv.string,
+        probatio.Required(HA_SERVICE_ATTR_AMOUNT_ML): probatio.All(
+            probatio.Coerce(int),
+            probatio.Range(min=50),
             _validate_amount_ml,
         ),
-        vol.Required(HA_SERVICE_ATTR_CO2_INTENSITY): vol.All(
-            vol.Coerce(int), vol.In([1, 2, 3])
+        probatio.Required(HA_SERVICE_ATTR_CO2_INTENSITY): probatio.All(
+            probatio.Coerce(int), probatio.In([1, 2, 3])
         ),
     }
 )
 
-SERVICE_CHANGE_PIN_SCHEMA = vol.Schema(
+SERVICE_CHANGE_PIN_SCHEMA = probatio.Schema(
     {
-        vol.Required(HA_SERVICE_ATTR_DEVICE_ID): cv.string,
-        vol.Required(HA_SERVICE_ATTR_NEW_PIN): vol.All(
+        probatio.Required(HA_SERVICE_ATTR_DEVICE_ID): cv.string,
+        probatio.Required(HA_SERVICE_ATTR_NEW_PIN): probatio.All(
             cv.string,
-            vol.Length(min=5, max=5),
-            vol.Match(r"^\d{5}$"),
+            probatio.Length(min=5, max=5),
+            probatio.Match(r"^\d{5}$"),
         ),
-        vol.Optional(HA_SERVICE_ATTR_UPDATE_CONFIG, default=False): cv.boolean,
+        probatio.Optional(HA_SERVICE_ATTR_UPDATE_CONFIG, default=False): cv.boolean,
     }
 )
 
-SERVICE_SCAN_PROTOCOL_SCHEMA = vol.Schema(
+SERVICE_SCAN_PROTOCOL_SCHEMA = probatio.Schema(
     {
-        vol.Required(HA_SERVICE_ATTR_DEVICE_ID): cv.string,
-        vol.Required(HA_SERVICE_ATTR_DATA): dict,
+        probatio.Required(HA_SERVICE_ATTR_DEVICE_ID): cv.string,
+        probatio.Required(HA_SERVICE_ATTR_DATA): dict,
     }
 )
 
-SERVICE_DEVICE_ONLY_SCHEMA = vol.Schema(
+SERVICE_DEVICE_ONLY_SCHEMA = probatio.Schema(
     {
-        vol.Required(HA_SERVICE_ATTR_DEVICE_ID): cv.string,
+        probatio.Required(HA_SERVICE_ATTR_DEVICE_ID): cv.string,
     }
 )
 
-SERVICE_CONNECT_WIFI_SCHEMA = vol.Schema(
+SERVICE_CONNECT_WIFI_SCHEMA = probatio.Schema(
     {
-        vol.Required(HA_SERVICE_ATTR_DEVICE_ID): cv.string,
-        vol.Required(HA_SERVICE_ATTR_SSID): cv.string,
-        vol.Required(HA_SERVICE_ATTR_PASSWORD): cv.string,
+        probatio.Required(HA_SERVICE_ATTR_DEVICE_ID): cv.string,
+        probatio.Required(HA_SERVICE_ATTR_SSID): cv.string,
+        probatio.Required(HA_SERVICE_ATTR_PASSWORD): cv.string,
     }
 )
 
-SERVICE_ALLOW_CLOUD_SCHEMA = vol.Schema(
+SERVICE_ALLOW_CLOUD_SCHEMA = probatio.Schema(
     {
-        vol.Required(HA_SERVICE_ATTR_DEVICE_ID): cv.string,
-        vol.Optional(HA_SERVICE_ATTR_RCA_ID, default=""): cv.string,
+        probatio.Required(HA_SERVICE_ATTR_DEVICE_ID): cv.string,
+        probatio.Optional(HA_SERVICE_ATTR_RCA_ID, default=""): cv.string,
     }
 )
 

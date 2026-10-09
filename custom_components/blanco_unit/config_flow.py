@@ -14,8 +14,8 @@ from bleak_retry_connector import (
     BleakNotFoundError,
     establish_connection,
 )
-import voluptuous as vol
-from voluptuous.schema_builder import UNDEFINED
+import probatio
+from probatio import UNDEFINED
 
 from homeassistant.components import bluetooth
 from homeassistant.components.bluetooth import BluetoothServiceInfoBleak
@@ -66,7 +66,7 @@ class BlancoUnitConfigFlow(ConfigFlow, domain=DOMAIN):
         data: dict[str, Any] | None = None,
         mac_editable: bool = True,
         name_editable: bool = True,
-    ) -> vol.Schema:
+    ) -> probatio.Schema:
         """Return a form schema with prefilled values from data."""
         _LOGGER.debug(
             "Load prefilled form with: %s and info %s", data, self._discovery_info
@@ -90,23 +90,23 @@ class BlancoUnitConfigFlow(ConfigFlow, domain=DOMAIN):
             name = self._discovery_info.name
 
         # Provide Schema
-        return vol.Schema(
+        return probatio.Schema(
             {
-                vol.Required(CONF_MAC, default=mac): TextSelector(
+                probatio.Required(CONF_MAC, default=mac): TextSelector(
                     TextSelectorConfig(
                         type=TextSelectorType.TEXT,
                         multiline=False,
                         read_only=not mac_editable,
                     )
                 ),
-                vol.Required(CONF_NAME, default=name): TextSelector(
+                probatio.Required(CONF_NAME, default=name): TextSelector(
                     TextSelectorConfig(
                         type=TextSelectorType.TEXT,
                         multiline=False,
                         read_only=not name_editable,
                     )
                 ),
-                vol.Required(CONF_PIN, default=pin): TextSelector(
+                probatio.Required(CONF_PIN, default=pin): TextSelector(
                     TextSelectorConfig(
                         type=TextSelectorType.TEXT,
                         multiline=False,
