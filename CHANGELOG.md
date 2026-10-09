@@ -1,3 +1,15 @@
+## [2.0.0](https://github.com/alexhaller/blanco_unit/compare/v1.2.11...v2.0.0) (2026-10-09)
+
+### ⚠ BREAKING CHANGES
+
+* requires Home Assistant 2026.9.0 or later.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+### Features
+
+* build schemas with probatio and require Home Assistant 2026.9 ([4ee4843](https://github.com/alexhaller/blanco_unit/commit/4ee484313b409a62d028a520ae80927442aa8da6))
+
 ## [1.2.11](https://github.com/alexhaller/blanco_unit/compare/v1.2.10...v1.2.11) (2026-08-22)
 
 ### Bug Fixes
