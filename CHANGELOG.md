@@ -1,3 +1,9 @@
+## [2.0.1](https://github.com/alexhaller/blanco_unit/compare/v2.0.0...v2.0.1) (2026-11-07)
+
+### Bug Fixes
+
+* give exception translations their domain so errors are not empty ([bdfaee9](https://github.com/alexhaller/blanco_unit/commit/bdfaee90746c9fe87ff1a34f197e31336cfb1289))
+
 ## [2.0.0](https://github.com/alexhaller/blanco_unit/compare/v1.2.11...v2.0.0) (2026-10-09)
 
 ### ⚠ BREAKING CHANGES
