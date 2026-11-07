@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import json
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -2263,3 +2264,237 @@ async def test_bluetooth_client_factory_reset_success(mock_establish):
     result = await client.factory_reset()
 
     assert result is True
+
+
+# -------------------------------
+# Connection Robustness Tests
+# -------------------------------
+
+
+def _client_for_tests(callback: MagicMock | None = None) -> BlancoUnitBluetoothClient:
+    device = BLEDevice(address="AA:BB:CC:DD:EE:FF", name="Test Device", details={})
+    return BlancoUnitBluetoothClient(
+        pin="12345", device=device, connection_callback=callback or MagicMock()
+    )
+
+
+def test_handle_disconnect_ignores_a_previous_client():
+    """A late disconnect callback of an old client keeps the current session."""
+    from custom_components.blanco_unit.client import _BlancoUnitSessionData
+
+    callback = MagicMock()
+    client = _client_for_tests(callback)
+    current = AsyncMock()
+    client._session_data = _BlancoUnitSessionData(
+        client=current, dev_id="device123", dev_type=1, protocol=MagicMock()
+    )
+
+    client._handle_disconnect(AsyncMock())
+
+    assert client._session_data is not None
+    callback.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_disconnect_clears_the_session_and_reports_it():
+    """Disconnecting drops the session at once and reports it."""
+    from custom_components.blanco_unit.client import _BlancoUnitSessionData
+
+    callback = MagicMock()
+    client = _client_for_tests(callback)
+    ble_client = AsyncMock()
+    client._session_data = _BlancoUnitSessionData(
+        client=ble_client, dev_id="device123", dev_type=1, protocol=MagicMock()
+    )
+
+    await client.disconnect()
+
+    assert client._session_data is None
+    callback.assert_called_once_with(False)
+    ble_client.disconnect.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_failed_request_disconnects_so_the_next_call_reconnects():
+    """A failed request closes the link so the next call reconnects."""
+    from custom_components.blanco_unit.client import _BlancoUnitSessionData
+
+    client = _client_for_tests()
+    ble_client = AsyncMock()
+    protocol = MagicMock()
+    protocol.send_request = AsyncMock(side_effect=BlancoUnitConnectionError("x"))
+    client._session_data = _BlancoUnitSessionData(
+        client=ble_client, dev_id="device123", dev_type=1, protocol=protocol
+    )
+
+    with pytest.raises(BlancoUnitConnectionError):
+        await client._execute_transaction(evt_type=7)
+
+    assert client._session_data is None
+    ble_client.disconnect.assert_awaited()
+    ble_client.unpair.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_gatt_timeout_on_bluez_removes_the_device():
+    """BlueZ keeps a stuck GATT operation until the device is removed."""
+    from bleak.backends import BleakBackend
+
+    from custom_components.blanco_unit.client import (
+        BlancoUnitGattTimeoutError,
+        _BlancoUnitSessionData,
+    )
+
+    client = _client_for_tests()
+    ble_client = AsyncMock()
+    ble_client.backend_id = BleakBackend.BLUEZ_DBUS
+    protocol = MagicMock()
+    protocol.send_request = AsyncMock(side_effect=BlancoUnitGattTimeoutError())
+    client._session_data = _BlancoUnitSessionData(
+        client=ble_client, dev_id="device123", dev_type=1, protocol=protocol
+    )
+
+    with pytest.raises(BlancoUnitGattTimeoutError):
+        await client._execute_transaction(evt_type=7)
+
+    ble_client.unpair.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_read_that_never_completes_raises_gatt_timeout():
+    """A read BlueZ never completes ends in a GATT timeout."""
+    from custom_components.blanco_unit.client import BlancoUnitGattTimeoutError
+
+    async def never(*_args):
+        await asyncio.Event().wait()
+
+    ble_client = AsyncMock()
+    ble_client.read_gatt_char = never
+
+    with (
+        patch("custom_components.blanco_unit.client.GATT_TIMEOUT", 0.01),
+        pytest.raises(BlancoUnitGattTimeoutError),
+    ):
+        await _BlancoUnitProtocol(mtu=200).read_response_chunks(ble_client)
+
+
+@pytest.mark.asyncio
+async def test_write_that_never_completes_raises_gatt_timeout():
+    """A write BlueZ never completes ends in a GATT timeout."""
+    from custom_components.blanco_unit.client import BlancoUnitGattTimeoutError
+
+    async def never(*_args, **_kwargs):
+        await asyncio.Event().wait()
+
+    ble_client = AsyncMock()
+    ble_client.write_gatt_char = never
+
+    with (
+        patch("custom_components.blanco_unit.client.GATT_TIMEOUT", 0.01),
+        pytest.raises(BlancoUnitGattTimeoutError),
+    ):
+        await _BlancoUnitProtocol(mtu=200)._write_packets(ble_client, [b"x"])
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    ("backend", "unpaired"), [("BLUEZ_DBUS", True), ("ESPHOME", False)]
+)
+async def test_validated_connection_reconnects_once_after_gatt_timeout(
+    backend: str, unpaired: bool
+):
+    """Only a BlueZ device loses its bond; a proxy keeps it and just reconnects."""
+    from bleak.backends import BleakBackend
+
+    from custom_components.blanco_unit.client import (
+        BlancoUnitGattTimeoutError,
+        establish_validated_connection,
+    )
+
+    first, second = AsyncMock(), AsyncMock()
+    first.backend_id = second.backend_id = getattr(BleakBackend, backend, "esphome")
+    validate = AsyncMock(side_effect=[BlancoUnitGattTimeoutError(), "ok"])
+    device = BLEDevice(address="AA:BB:CC:DD:EE:FF", name="Test Device", details={})
+
+    with (
+        patch(
+            "custom_components.blanco_unit.client.establish_connection",
+            side_effect=[first, second],
+        ) as mock_establish,
+        patch("custom_components.blanco_unit.client.REDISCOVERY_DELAY", 0),
+    ):
+        client, result = await establish_validated_connection(device, validate)
+
+    assert (client, result) == (second, "ok")
+    assert mock_establish.await_count == 2
+    assert mock_establish.await_args.kwargs["pair"] is True
+    assert first.unpair.await_count == int(unpaired)
+    first.disconnect.assert_awaited()
+
+
+@pytest.mark.asyncio
+async def test_validated_connection_gives_up_after_the_second_timeout():
+    """A second GATT timeout after reconnecting is raised."""
+    from custom_components.blanco_unit.client import (
+        BlancoUnitGattTimeoutError,
+        establish_validated_connection,
+    )
+
+    validate = AsyncMock(side_effect=BlancoUnitGattTimeoutError())
+    device = BLEDevice(address="AA:BB:CC:DD:EE:FF", name="Test Device", details={})
+
+    with (
+        patch(
+            "custom_components.blanco_unit.client.establish_connection",
+            side_effect=[AsyncMock(), AsyncMock()],
+        ),
+        patch("custom_components.blanco_unit.client.REDISCOVERY_DELAY", 0),
+        pytest.raises(BlancoUnitGattTimeoutError),
+    ):
+        await establish_validated_connection(device, validate)
+
+
+@pytest.mark.asyncio
+async def test_validated_connection_closes_the_link_when_validation_fails():
+    """A failed validation does not leave the device connected."""
+    from custom_components.blanco_unit.client import establish_validated_connection
+
+    ble_client = AsyncMock()
+    device = BLEDevice(address="AA:BB:CC:DD:EE:FF", name="Test Device", details={})
+
+    with (
+        patch(
+            "custom_components.blanco_unit.client.establish_connection",
+            return_value=ble_client,
+        ),
+        pytest.raises(BlancoUnitAuthenticationError),
+    ):
+        await establish_validated_connection(
+            device, AsyncMock(side_effect=BlancoUnitAuthenticationError())
+        )
+
+    ble_client.disconnect.assert_awaited_once()
+
+
+def test_secret_parameters_are_redacted_in_logs():
+    """Passwords and PINs in request parameters never reach the log."""
+    from custom_components.blanco_unit.client import _loggable_envelope
+
+    envelope = _RequestEnvelope(
+        session=1,
+        id=2,
+        token="t",
+        salt="s",
+        body=_RequestBody(
+            meta=_RequestMeta(evt_type=7, dev_id="d", dev_type=1),
+            pars={"ssid": "home", "password": "secret", "new_pass": "54321"},
+        ),
+    )
+
+    pars = _loggable_envelope(envelope)["body"]["pars"]
+
+    assert pars == {
+        "ssid": "home",
+        "password": "**REDACTED**",
+        "new_pass": "**REDACTED**",
+    }
