@@ -1,3 +1,11 @@
+## [2.0.2](https://github.com/alexhaller/blanco_unit/compare/v2.0.1...v2.0.2) (2026-11-09)
+
+### Bug Fixes
+
+* harden the BLE connection against leaks and stuck GATT operations ([ef3c1fa](https://github.com/alexhaller/blanco_unit/commit/ef3c1fa8c615ba7de199222e91f143191872d7f0)), closes [#24](https://github.com/alexhaller/blanco_unit/issues/24) [#25](https://github.com/alexhaller/blanco_unit/issues/25) [#27](https://github.com/alexhaller/blanco_unit/issues/27)
+* point the documentation and issue links at this repository ([d423f16](https://github.com/alexhaller/blanco_unit/commit/d423f16a9d2fa40e5647d854a6d3e4afec487476)), closes [hacs/default#13647](https://github.com/hacs/default/issues/13647)
+* stop reporting the filter and CO2 capacity as a battery ([5311f42](https://github.com/alexhaller/blanco_unit/commit/5311f425617c2c21cc30bd72d621723f3c29a78c))
+
 ## [2.0.1](https://github.com/alexhaller/blanco_unit/compare/v2.0.0...v2.0.1) (2026-11-07)
 
 ### Bug Fixes
