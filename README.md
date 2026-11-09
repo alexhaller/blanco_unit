@@ -1,10 +1,8 @@
 # Blanco Unit Integration for Home Assistant
 
-[![Open Blanco Unit in HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Nailik&repository=blanco_unit&category=integration)
+[![Open Blanco Unit in HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=alexhaller&repository=blanco_unit&category=integration)
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://hacs.xyz)
-[![Version](https://img.shields.io/github/v/release/Nailik/blanco_unit)](https://github.com/Nailik/vogels_motblanco_unition_mount_ble/releases/latest)
-![Downloads latest](https://img.shields.io/github/downloads/nailik/blanco_unit/latest/total.svg)
-![Downloads](https://img.shields.io/github/downloads/nailik/blanco_unit/total)
+[![Version](https://img.shields.io/github/v/release/alexhaller/blanco_unit)](https://github.com/alexhaller/blanco_unit/releases/latest)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 
 A Home Assistant custom integration for Blanco water dispensers with Bluetooth Low Energy (BLE) connectivity. Control and monitor your Blanco Unit water dispenser directly from Home Assistant.
@@ -28,25 +26,20 @@ This integration allows you to:
 
 ## Requirements
 
-- **Home Assistant**: Version 2025.6.0 or newer
+- **Home Assistant**: Version 2026.9.0 or newer
 - **Bluetooth**: Your Home Assistant instance must have Bluetooth support enabled
-- **Dependencies**: `bleak>=0.21.1` (automatically installed)
 - **Device PIN**: The 5-digit PIN code for your Blanco Unit (found in device documentation)
 
 ## Installation
 
 ### HACS Installation (Recommended)
 
-1. Open HACS in Home Assistant
-2. Click on "Integrations"
-3. Click the three dots in the top right corner
-4. Select "Custom repositories"
-5. Add repository URL: `https://github.com/Nailik/blanco_unit`
-6. Select category: "Integration"
-7. Click "Add"
-8. Search for "Blanco Unit" in HACS
-9. Click "Download"
-10. Restart Home Assistant
+1. Open the Marketplace (HACS) in Home Assistant
+2. Search for "Blanco Unit" and click "Download"
+3. Restart Home Assistant
+
+If it does not show up in the search, add `https://github.com/alexhaller/blanco_unit`
+as a custom repository of the category "Integration" first.
 
 ### Manual Installation
 
@@ -519,8 +512,9 @@ For developers and advanced users interested in the Bluetooth protocol implement
 
 ## Support
 
-- **Issues**: [GitHub Issues](https://github.com/Nailik/blanco_unit/issues)
-- **Documentation**: [GitHub Repository](https://github.com/Nailik/blanco_unit)
+- **Issues**: [GitHub Issues](https://github.com/alexhaller/blanco_unit/issues)
+- **Documentation**: [GitHub Repository](https://github.com/alexhaller/blanco_unit)
+- **Origin**: forked from [Nailik/blanco_unit](https://github.com/Nailik/blanco_unit)
 
 ## License
 
