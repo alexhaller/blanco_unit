@@ -1,3 +1,9 @@
+## [2.0.4](https://github.com/alexhaller/blanco_unit/compare/v2.0.3...v2.0.4) (2026-11-09)
+
+### Bug Fixes
+
+* use unpredictable request ids and type-check the whole integration ([#3](https://github.com/alexhaller/blanco_unit/issues/3)) ([e92a0ce](https://github.com/alexhaller/blanco_unit/commit/e92a0ce56dac7ecbadc2dce19e6c4d413111dfb0))
+
 ## [2.0.3](https://github.com/alexhaller/blanco_unit/compare/v2.0.2...v2.0.3) (2026-11-09)
 
 ### Bug Fixes
