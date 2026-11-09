@@ -10,6 +10,10 @@ on:
   schedule:
     - cron: "0 0 * * *"
 
+# Validation only reads the repository
+permissions:
+  contents: read
+
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
@@ -52,3 +56,14 @@ jobs:
           python -c "import json; reqs=json.load(open('custom_components/blanco_unit/manifest.json'))['requirements']; open('_reqs_tmp.txt','w').write('\n'.join(reqs))"
           pip-audit -r _reqs_tmp.txt
           rm _reqs_tmp.txt
+
+  tests:
+    name: pytest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+      - run: pip install -r requirements.test.txt
+      - run: pytest tests -q -p no:respx -o asyncio_mode=auto -o asyncio_default_fixture_loop_scope=function

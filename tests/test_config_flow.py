@@ -1,9 +1,19 @@
 """Tests for the Blanco Unit config flow."""
 
+from __future__ import annotations
+
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from homeassistant.config_entries import (
+    SOURCE_BLUETOOTH,
+    SOURCE_REAUTH,
+    SOURCE_RECONFIGURE,
+    SOURCE_USER,
+)
+from homeassistant.core import HomeAssistant
+from homeassistant.data_entry_flow import FlowResultType
 from pytest_homeassistant.common import MockConfigEntry
 
 from custom_components.blanco_unit.client import PinValidationResult
@@ -14,14 +24,6 @@ from custom_components.blanco_unit.const import (
     CONF_PIN,
     DOMAIN,
 )
-from homeassistant.config_entries import (
-    SOURCE_BLUETOOTH,
-    SOURCE_REAUTH,
-    SOURCE_RECONFIGURE,
-    SOURCE_USER,
-)
-from homeassistant.core import HomeAssistant
-from homeassistant.data_entry_flow import FlowResultType
 
 MOCKED_CONF_MAC = "AA:BB:CC:DD:EE:FF"
 MOCKED_CONF_NAME = "Test Blanco Unit"

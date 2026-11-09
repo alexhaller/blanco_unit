@@ -3,15 +3,15 @@
 from __future__ import annotations
 
 import asyncio
-from collections.abc import Awaitable, Callable
 import contextlib
-from dataclasses import asdict, dataclass, field
 import hashlib
 import json
 import logging
 import math
-import random
+import secrets
 import time
+from collections.abc import Awaitable, Callable
+from dataclasses import asdict, dataclass, field
 from typing import Any
 
 from bleak import BleakClient
@@ -285,7 +285,7 @@ class _BlancoUnitProtocol:
     def __init__(self, mtu: int = MTU_SIZE) -> None:
         """Initialize protocol handler."""
         self.mtu = mtu
-        self.session_id = random.randint(1000000, 9999999)
+        self.session_id = secrets.randbelow(9000000) + 1000000
         self.msg_id_counter = 1
 
     def calculate_token(self, pin: str, salt: str) -> str:
@@ -343,7 +343,7 @@ class _BlancoUnitProtocol:
         try:
             result: dict[str, Any] = json.loads(clean.decode("utf-8"))
             _LOGGER.debug("Parsed response data: %s", result)
-            return result  # noqa: TRY300
+            return result
         except Exception as e:
             _LOGGER.error("JSON parse failed: %s", clean)
             raise ValueError("Failed to parse JSON response") from e
@@ -429,7 +429,7 @@ class _BlancoUnitProtocol:
             attempts += 1
             try:
                 async with asyncio.timeout(GATT_TIMEOUT):
-                    data = await client.read_gatt_char(CHARACTERISTIC_UUID)
+                    data = bytes(await client.read_gatt_char(CHARACTERISTIC_UUID))
             except TimeoutError as err:
                 raise BlancoUnitGattTimeoutError("Read did not complete") from err
             except Exception as err:  # noqa: BLE001
@@ -508,7 +508,7 @@ class _BlancoUnitProtocol:
         meta = _RequestMeta(evt_type=10, dev_id=None, dev_type=None)
         body = _RequestBody(meta=meta, pars={})
 
-        req_id = random.randint(1000000, 9999999)
+        req_id = secrets.randbelow(9000000) + 1000000
         salt = f"{self.session_id}{req_id}"
         token = self.calculate_token(pin, salt)
 
@@ -546,7 +546,7 @@ class _BlancoUnitProtocol:
         opts_dict: dict[str, int] | None = {"ctrl": ctrl} if ctrl is not None else None
         body = _RequestBody(meta=meta, opts=opts_dict, pars=pars)
 
-        req_id = random.randint(1000000, 9999999)
+        req_id = secrets.randbelow(9000000) + 1000000
         salt = f"{self.session_id}{req_id}"
         token = self.calculate_token(pin, salt)
 
@@ -660,6 +660,9 @@ class BlancoUnitBluetoothClient:
                 result.dev_id,
                 result.dev_type,
             )
+            if result.dev_id is None or result.dev_type is None:
+                # _perform_pairing raises for both; this narrows the types
+                raise BlancoUnitConnectionError("Incomplete pairing response")
             self._session_data = _BlancoUnitSessionData(
                 client=client,
                 dev_id=result.dev_id,
@@ -677,6 +680,12 @@ class BlancoUnitBluetoothClient:
             return
         self._session_data = None
         self._connection_callback(False)
+
+    def _protocol(self) -> _BlancoUnitProtocol:
+        """Return the protocol of the current session."""
+        if self._session_data is None:
+            raise BlancoUnitConnectionError("Not connected")
+        return self._session_data.protocol
 
     async def _perform_pairing(
         self, client: BleakClient, protocol: _BlancoUnitProtocol
@@ -746,7 +755,7 @@ class BlancoUnitBluetoothClient:
     async def get_system_info(self) -> BlancoUnitSystemInfo:
         """Read and return system information (firmware versions, device name, reset count)."""
         resp = await self._execute_transaction(evt_type=7, ctrl=3, pars={"evt_type": 2})
-        pars = self._session_data.protocol.extract_pars(resp)
+        pars = self._protocol().extract_pars(resp)
         return BlancoUnitSystemInfo(
             sw_ver_comm_con=pars.get("sw_ver_comm_con", {}).get("val", "Unknown"),
             sw_ver_elec_con=pars.get("sw_ver_elec_con", {}).get("val", "Unknown"),
@@ -758,7 +767,7 @@ class BlancoUnitBluetoothClient:
     async def get_settings(self) -> BlancoUnitSettings:
         """Read and return device configuration settings."""
         resp = await self._execute_transaction(evt_type=7, ctrl=3, pars={"evt_type": 5})
-        pars = self._session_data.protocol.extract_pars(resp)
+        pars = self._protocol().extract_pars(resp)
         return BlancoUnitSettings(
             calib_still_wtr=pars.get("calib_still_wtr", {}).get("val", 0),
             calib_soda_wtr=pars.get("calib_soda_wtr", {}).get("val", 0),
@@ -776,7 +785,7 @@ class BlancoUnitBluetoothClient:
     async def get_status(self) -> BlancoUnitStatus:
         """Read and return real-time device status."""
         resp = await self._execute_transaction(evt_type=7, ctrl=3, pars={"evt_type": 6})
-        pars = self._session_data.protocol.extract_pars(resp)
+        pars = self._protocol().extract_pars(resp)
         return BlancoUnitStatus(
             tap_state=pars.get("tap_state", {}).get("val", 0),
             filter_rest=pars.get("filter_rest", {}).get("val", 0),
@@ -797,7 +806,7 @@ class BlancoUnitBluetoothClient:
     async def get_device_identity(self) -> BlancoUnitIdentity:
         """Read and return device identity (serial number, service code)."""
         resp = await self._execute_transaction(evt_type=7, ctrl=2, pars={})
-        pars = self._session_data.protocol.extract_pars(resp)
+        pars = self._protocol().extract_pars(resp)
         return BlancoUnitIdentity(
             serial_no=pars.get("ser_no", "Unknown"),
             service_code=pars.get("serv_code", "Unknown"),
@@ -806,7 +815,7 @@ class BlancoUnitBluetoothClient:
     async def get_wifi_info(self) -> BlancoUnitWifiInfo:
         """Read and return WiFi and network information."""
         resp = await self._execute_transaction(evt_type=7, ctrl=10, pars={})
-        pars = self._session_data.protocol.extract_pars(resp)
+        pars = self._protocol().extract_pars(resp)
         return BlancoUnitWifiInfo(
             cloud_connect=pars.get("cloud_connect", {}).get("val", False),
             ssid=pars.get("ssid", {}).get("val", ""),
@@ -966,7 +975,7 @@ class BlancoUnitBluetoothClient:
         """
         _LOGGER.info("Scanning for WiFi networks")
         resp = await self._execute_transaction(evt_type=7, ctrl=12, pars={})
-        pars = self._session_data.protocol.extract_pars(resp)
+        pars = self._protocol().extract_pars(resp)
         aps = pars.get("aps", [])
         return [
             BlancoUnitWifiNetwork(
@@ -1033,7 +1042,7 @@ class BlancoUnitBluetoothClient:
 
     async def test_protocol_parameters(
         self, evt_type: int, ctrl: int | None = None, pars: dict[str, Any] | None = None
-    ) -> dict[str, Any]:
+    ) -> dict[str, Any] | None:
         """Test protocol parameters and return response if it contains meaningful data.
 
         Args:
@@ -1203,7 +1212,7 @@ async def _protocol_for_client(client: BleakClient) -> _BlancoUnitProtocol:
         # A small MTU is a property of the adapter and the device, so it does
         # not change between connections. Warn once and keep the repeats at
         # debug rather than restating it on every reconnect.
-        global _SMALL_MTU_WARNED  # noqa: PLW0603
+        global _SMALL_MTU_WARNED
         detail = (
             f"Acquiring the MTU failed: {mtu_error}"
             if mtu_error

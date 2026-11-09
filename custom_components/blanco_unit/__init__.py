@@ -6,8 +6,6 @@ import logging
 
 from bleak.backends.device import BLEDevice
 from bleak.exc import BleakError
-from packaging import version
-
 from homeassistant.components import bluetooth
 from homeassistant.components.bluetooth import (
     BluetoothChange,
@@ -15,13 +13,12 @@ from homeassistant.components.bluetooth import (
     BluetoothServiceInfoBleak,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import Platform, __version__ as ha_version
+from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import (
     ConfigEntryAuthFailed,
     ConfigEntryNotReady,
     HomeAssistantError,
-    IntegrationError,
 )
 from homeassistant.helpers import config_validation as cv
 
@@ -32,7 +29,6 @@ from .const import (
     CONF_MAC,
     CONF_PIN,
     DOMAIN,
-    MIN_HA_VERSION,
     RANDOM_MAC_PLACEHOLDER,
     SERVICE_UUID,
 )
@@ -57,12 +53,6 @@ CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 async def async_setup(hass: HomeAssistant, entry: BlancoUnitConfigEntry) -> bool:
     """Set up Blanco Unit integration services."""
     _LOGGER.debug("async_setup called with config_entry: %s", entry)
-    if version.parse(ha_version) < version.parse(MIN_HA_VERSION):
-        raise IntegrationError(
-            translation_domain=DOMAIN,
-            translation_key="invalid_ha_version",
-            translation_placeholders={"version": MIN_HA_VERSION},
-        )
     async_setup_services(hass)
     return True
 

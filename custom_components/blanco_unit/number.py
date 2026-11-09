@@ -1,5 +1,7 @@
 """Number entities to define properties that can be changed for Blanco Unit BLE entities."""
 
+from __future__ import annotations
+
 from homeassistant.components.number import NumberEntity, NumberMode
 from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
@@ -8,6 +10,9 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from . import BlancoUnitConfigEntry
 from .base import BlancoUnitBaseEntity
 from .coordinator import BlancoUnitCoordinator
+
+# Writes go to the device one at a time
+PARALLEL_UPDATES = 1
 
 
 async def async_setup_entry(

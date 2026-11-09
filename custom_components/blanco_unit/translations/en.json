@@ -30,7 +30,6 @@
   },
   "config": {
     "error": {
-      "invalid_ha_version": "Blanco Unit integration requires Home Assistant version {version} or newer.",
       "invalid_mac_code": "The MAC address format is invalid. Please use format XX:XX:XX:XX:XX:XX.",
       "invalid_pin_format": "PIN must be exactly 5 digits (00000-99999).",
       "error_device_not_found": "Device not found. Please ensure the Blanco Unit is powered on and in Bluetooth range.",

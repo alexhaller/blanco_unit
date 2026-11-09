@@ -1,15 +1,16 @@
 """Coordinator for Blanco Unit BLE integration in order to communicate with client."""
 
+from __future__ import annotations
+
 import asyncio
+import logging
 from collections.abc import Callable
 from dataclasses import replace
 from datetime import timedelta
-import logging
 from typing import Any
 
 from bleak.backends.device import BLEDevice
 from bleak_retry_connector import BleakConnectionError, BleakNotFoundError
-
 from homeassistant.components import bluetooth
 from homeassistant.components.bluetooth import (
     BluetoothChange,
@@ -251,7 +252,7 @@ class BlancoUnitCoordinator(DataUpdateCoordinator[BlancoUnitData]):
 
     async def test_protocol_parameters(
         self, evt_type: int, ctrl: int | None = None, pars: dict[str, Any] | None = None
-    ) -> dict[str, Any]:
+    ) -> dict[str, Any] | None:
         """Test protocol parameters by sending a custom event."""
         return await self._call(
             self._client.test_protocol_parameters, evt_type, ctrl, pars

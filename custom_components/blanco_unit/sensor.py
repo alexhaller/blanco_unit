@@ -1,5 +1,7 @@
 """Sensor entities to define properties for Blanco Unit BLE entities."""
 
+from __future__ import annotations
+
 from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorEntity,
@@ -18,6 +20,9 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from . import BlancoUnitConfigEntry
 from .base import BlancoUnitBaseEntity
 from .coordinator import BlancoUnitCoordinator
+
+# Read-only: the coordinator already serializes the BLE traffic
+PARALLEL_UPDATES = 0
 
 
 async def async_setup_entry(

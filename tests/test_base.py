@@ -1,12 +1,14 @@
 """Tests for the Blanco Unit base entity."""
 
+from __future__ import annotations
+
 from unittest.mock import MagicMock, patch
 
 import pytest
+from homeassistant.core import HomeAssistant
 
 from custom_components.blanco_unit.base import BlancoUnitBaseEntity
 from custom_components.blanco_unit.data import BlancoUnitData
-from homeassistant.core import HomeAssistant
 
 
 @pytest.fixture

@@ -1,8 +1,8 @@
 """Constants for the Blanco Unit integration."""
 
+from __future__ import annotations
+
 DOMAIN = "blanco_unit"
-# for this version read_only was added to config selectors
-MIN_HA_VERSION = "2025.6.0"
 
 # Config Entry Keys
 CONF_MAC = "conf_mac"

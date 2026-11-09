@@ -1,9 +1,13 @@
 """Tests for Blanco Unit services."""
 
+from __future__ import annotations
+
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 import voluptuous as vol
+from homeassistant.core import HomeAssistant, ServiceCall
+from homeassistant.exceptions import ServiceValidationError
 
 from custom_components.blanco_unit.const import (
     CONF_PIN,
@@ -36,8 +40,6 @@ from custom_components.blanco_unit.services import (
     _validate_amount_ml,
     async_setup_services,
 )
-from homeassistant.core import HomeAssistant, ServiceCall
-from homeassistant.exceptions import ServiceValidationError
 
 
 def test_validate_amount_ml_valid():

@@ -1,8 +1,13 @@
 """Tests for the Blanco Unit number entities."""
 
+from __future__ import annotations
+
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from homeassistant.const import Platform
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers import entity_registry as er
 from pytest_homeassistant.common import MockConfigEntry, snapshot_platform
 from syrupy.assertion import SnapshotAssertion
 
@@ -13,11 +18,8 @@ from custom_components.blanco_unit.number import (
     CalibrationStillNumber,
     async_setup_entry,
 )
-from homeassistant.const import Platform
-from homeassistant.core import HomeAssistant
-from homeassistant.helpers import entity_registry as er
 
-from .conftest import setup_integration  # noqa: TID251
+from .conftest import setup_integration
 
 
 @pytest.fixture

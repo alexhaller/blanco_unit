@@ -1,8 +1,22 @@
 """Tests for the Blanco Unit __init__ module."""
 
+from __future__ import annotations
+
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from homeassistant.components.bluetooth import (
+    BluetoothChange,
+    BluetoothServiceInfoBleak,
+)
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import Platform
+from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import (
+    ConfigEntryAuthFailed,
+    ConfigEntryNotReady,
+    HomeAssistantError,
+)
 
 from custom_components.blanco_unit import (
     _find_device_by_scanning,
@@ -23,30 +37,6 @@ from custom_components.blanco_unit.const import (
     RANDOM_MAC_PLACEHOLDER,
     SERVICE_UUID,
 )
-from homeassistant.components.bluetooth import (
-    BluetoothChange,
-    BluetoothServiceInfoBleak,
-)
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import Platform
-from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import (
-    ConfigEntryAuthFailed,
-    ConfigEntryNotReady,
-    HomeAssistantError,
-    IntegrationError,
-)
-
-
-async def test_async_setup_min_ha_version_check(hass: HomeAssistant) -> None:
-    """Test async_setup checks minimum HA version."""
-    mock_entry = MagicMock(spec=ConfigEntry)
-
-    with patch("custom_components.blanco_unit.ha_version", "2024.1.0"):
-        with pytest.raises(IntegrationError) as exc_info:
-            await async_setup(hass, mock_entry)
-
-        assert exc_info.value.translation_key == "invalid_ha_version"
 
 
 async def test_async_setup_success(hass: HomeAssistant) -> None:
@@ -54,7 +44,6 @@ async def test_async_setup_success(hass: HomeAssistant) -> None:
     mock_entry = MagicMock(spec=ConfigEntry)
 
     with (
-        patch("homeassistant.const.__version__", "2025.6.0"),
         patch(
             "custom_components.blanco_unit.async_setup_services"
         ) as mock_setup_services,
