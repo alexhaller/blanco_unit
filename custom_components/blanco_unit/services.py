@@ -1,13 +1,15 @@
 """Home Assistant services provided by the Blanco Unit integration."""
 
+from __future__ import annotations
+
 import json
 import logging
 
 import probatio
-
 from homeassistant.core import HomeAssistant, ServiceCall, SupportsResponse
 from homeassistant.exceptions import ServiceValidationError
-from homeassistant.helpers import config_validation as cv, device_registry as dr
+from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.service import async_register_admin_service
 
 from .client import SECRET_PARS

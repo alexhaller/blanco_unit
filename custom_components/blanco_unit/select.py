@@ -1,5 +1,9 @@
 """Select entities to define properties for Blanco Unit BLE entities."""
 
+from __future__ import annotations
+
+from typing import Final
+
 from homeassistant.components.select import SelectEntity
 from homeassistant.components.sensor import SensorDeviceClass
 from homeassistant.const import EntityCategory, UnitOfTemperature
@@ -9,6 +13,14 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from . import BlancoUnitConfigEntry
 from .base import BlancoUnitBaseEntity
 from .coordinator import BlancoUnitCoordinator
+
+_COOLING_OPTIONS: Final = ["4", "5", "6", "7", "8", "9", "10"]
+_HEATING_OPTIONS: Final = [str(t) for t in range(60, 101)]
+_HARDNESS_OPTIONS: Final = ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
+
+
+# Writes go to the device one at a time
+PARALLEL_UPDATES = 1
 
 
 async def async_setup_entry(
@@ -33,7 +45,7 @@ class TemperatureSelect(BlancoUnitBaseEntity, SelectEntity):
 
     _attr_unique_id = "temperature"
     _attr_translation_key = _attr_unique_id
-    _attr_options = ["4", "5", "6", "7", "8", "9", "10"]
+    _attr_options = _COOLING_OPTIONS
     _attr_device_class = SensorDeviceClass.TEMPERATURE
     _attr_entity_category = EntityCategory.CONFIG
     _attr_unit_of_measurement = UnitOfTemperature.CELSIUS
@@ -60,7 +72,7 @@ class HeatingTemperatureSelect(BlancoUnitBaseEntity, SelectEntity):
 
     _attr_unique_id = "heating_temperature"
     _attr_translation_key = _attr_unique_id
-    _attr_options = [str(t) for t in range(60, 101)]  # 60-100°C
+    _attr_options = _HEATING_OPTIONS
     _attr_device_class = SensorDeviceClass.TEMPERATURE
     _attr_entity_category = EntityCategory.CONFIG
     _attr_unit_of_measurement = UnitOfTemperature.CELSIUS
@@ -96,7 +108,7 @@ class WaterHardnessSelect(BlancoUnitBaseEntity, SelectEntity):
 
     _attr_unique_id = "water_hardness"
     _attr_translation_key = _attr_unique_id
-    _attr_options = ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
+    _attr_options = _HARDNESS_OPTIONS
     _attr_icon = "mdi:water-opacity"
     _attr_entity_category = EntityCategory.CONFIG
 

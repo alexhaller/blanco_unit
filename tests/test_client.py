@@ -6,8 +6,8 @@ import asyncio
 import json
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from bleak.backends.device import BLEDevice
 import pytest
+from bleak.backends.device import BLEDevice
 
 from custom_components.blanco_unit.client import (
     BlancoUnitAuthenticationError,

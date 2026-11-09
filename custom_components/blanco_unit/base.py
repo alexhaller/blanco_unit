@@ -1,10 +1,11 @@
 """Base entity to define common properties and methods for Blanco Unit BLE entities."""
 
-from propcache.api import cached_property
+from __future__ import annotations
 
 from homeassistant.core import callback
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from propcache.api import cached_property
 
 from .const import DOMAIN
 from .coordinator import BlancoUnitCoordinator

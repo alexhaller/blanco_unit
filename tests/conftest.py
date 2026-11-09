@@ -1,11 +1,12 @@
 """Common test fixtures for Blanco Unit tests."""
 
+from __future__ import annotations
+
 from unittest.mock import MagicMock
 
 import pytest
-from pytest_homeassistant.common import MockConfigEntry
-
 from homeassistant.core import HomeAssistant
+from pytest_homeassistant.common import MockConfigEntry
 
 
 @pytest.fixture

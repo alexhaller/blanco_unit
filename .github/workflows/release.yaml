@@ -27,7 +27,7 @@ jobs:
 
       - name: Semantic Release
         id: semantic
-        uses: cycjimmy/semantic-release-action@v8
+        uses: cycjimmy/semantic-release-action@ad51787758d9654d5a75150a89a6fa9b3ccef95e # v8.1.4
         with:
           extra_plugins: |
             @semantic-release/commit-analyzer
@@ -47,13 +47,13 @@ jobs:
 
       - name: Sign release package
         if: steps.semantic.outputs.new_release_published == 'true'
-        uses: sigstore/gh-action-sigstore-python@v3.5.0
+        uses: sigstore/gh-action-sigstore-python@790bc6befb9d733738f18d8f895854b453640ec9 # v3.5.0
         with:
           inputs: ${{ github.workspace }}/custom_components/blanco_unit/blanco_unit.zip
 
       - name: Upload zip to release
         if: steps.semantic.outputs.new_release_published == 'true'
-        uses: softprops/action-gh-release@v3.0.4
+        uses: softprops/action-gh-release@8a0cd651e5b2365bd640854a3fa5dfc70e4875f3 # v3.0.4
         with:
           tag_name: v${{ steps.semantic.outputs.new_release_version }}
           files: ${{ github.workspace }}/custom_components/blanco_unit/blanco_unit.zip

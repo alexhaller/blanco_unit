@@ -2,20 +2,19 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
 import logging
 import re
+from dataclasses import dataclass
 from typing import Any
 
+import probatio
+from bleak.backends.device import BLEDevice
 from bleak.exc import BleakError
 from bleak_retry_connector import (
     BleakConnectionError,
     BleakNotFoundError,
     BleakOutOfConnectionSlotsError,
 )
-import probatio
-from probatio import UNDEFINED
-
 from homeassistant.components import bluetooth
 from homeassistant.components.bluetooth import BluetoothServiceInfoBleak
 from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
@@ -24,6 +23,7 @@ from homeassistant.helpers.selector import (
     TextSelectorConfig,
     TextSelectorType,
 )
+from probatio import UNDEFINED
 
 from .client import (
     BlancoUnitAuthenticationError,
@@ -148,6 +148,7 @@ class BlancoUnitConfigFlow(ConfigFlow, domain=DOMAIN):
         client = None
         try:
             # Use device from discovery_info if available
+            device: BLEDevice | None
             if self._discovery_info is not None:
                 _LOGGER.debug("Using device from discovery_info")
                 device = self._discovery_info.device

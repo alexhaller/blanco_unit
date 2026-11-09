@@ -1,5 +1,7 @@
 """Binary sensor entities to define properties for Blanco Unit BLE entities."""
 
+from __future__ import annotations
+
 from homeassistant.components.binary_sensor import (
     BinarySensorDeviceClass,
     BinarySensorEntity,
@@ -16,6 +18,10 @@ from .coordinator import BlancoUnitCoordinator
 # Base state (bits 8 + 16) = 65792 is always set when device is running
 STATUS_BIT_HEATER = 0x2000  # Bit 13 (8192) - Boiler heater element active
 STATUS_BIT_COMPRESSOR = 0x4000  # Bit 14 (16384) - Cooling compressor active
+
+
+# Read-only: the coordinator already serializes the BLE traffic
+PARALLEL_UPDATES = 0
 
 
 async def async_setup_entry(

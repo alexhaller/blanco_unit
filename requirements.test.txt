@@ -2,7 +2,6 @@
 # HA release it was built from, and a second pin that disagrees makes pip
 # silently backtrack to an older release of it instead of failing.
 pytest
-pytest-cov
 pytest-homeassistant[bluetooth]
 serialx
 bleak

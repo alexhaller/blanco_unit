@@ -1,10 +1,17 @@
 """Tests for the Blanco Unit coordinator."""
 
+from __future__ import annotations
+
 from datetime import timedelta
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from bleak_retry_connector import BleakConnectionError, BleakNotFoundError
 import pytest
+from bleak_retry_connector import BleakConnectionError, BleakNotFoundError
+from homeassistant.components.bluetooth import BluetoothServiceInfoBleak
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ConfigEntryAuthFailed, ServiceValidationError
+from homeassistant.helpers.update_coordinator import UpdateFailed
 
 from custom_components.blanco_unit.client import BlancoUnitAuthenticationError
 from custom_components.blanco_unit.const import CONF_MAC, CONF_PIN
@@ -18,11 +25,6 @@ from custom_components.blanco_unit.data import (
     BlancoUnitWifiInfo,
     BlancoUnitWifiNetwork,
 )
-from homeassistant.components.bluetooth import BluetoothServiceInfoBleak
-from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ConfigEntryAuthFailed, ServiceValidationError
-from homeassistant.helpers.update_coordinator import UpdateFailed
 
 
 @pytest.fixture
