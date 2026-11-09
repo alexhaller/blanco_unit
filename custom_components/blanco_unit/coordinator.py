@@ -22,13 +22,7 @@ from homeassistant.exceptions import ConfigEntryAuthFailed, ServiceValidationErr
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .client import BlancoUnitAuthenticationError, BlancoUnitBluetoothClient
-from .const import (
-    CHARACTERISTIC_UUID,
-    CONF_MAC,
-    CONF_PIN,
-    DOMAIN,
-    RANDOM_MAC_PLACEHOLDER,
-)
+from .const import CONF_MAC, CONF_PIN, DOMAIN, RANDOM_MAC_PLACEHOLDER, SERVICE_UUID
 from .data import BlancoUnitData, BlancoUnitWifiNetwork
 
 _LOGGER = logging.getLogger(__name__)
@@ -51,7 +45,7 @@ class BlancoUnitCoordinator(DataUpdateCoordinator[BlancoUnitData]):
         unsub_options_update_listener: Callable[[], None],
     ) -> None:
         """Initialize coordinator and setup client."""
-        _LOGGER.debug("Startup coordinator with %s", config_entry.data)
+        _LOGGER.debug("Startup coordinator for %s", config_entry.data[CONF_MAC])
 
         # Store setup data
         self.address = device.address
@@ -60,7 +54,7 @@ class BlancoUnitCoordinator(DataUpdateCoordinator[BlancoUnitData]):
 
         # Create client
         self._client = BlancoUnitBluetoothClient(
-            pin=str(config_entry.data[CONF_PIN]),
+            pin=str(config_entry.data[CONF_PIN]).zfill(5),
             device=device,
             connection_callback=self._connection_changed,
         )
@@ -85,7 +79,7 @@ class BlancoUnitCoordinator(DataUpdateCoordinator[BlancoUnitData]):
             self._unsub_available_update_listener = bluetooth.async_register_callback(
                 hass,
                 self._available_callback,
-                {"service_uuid": CHARACTERISTIC_UUID, "connectable": True},
+                {"service_uuid": SERVICE_UUID, "connectable": True},
                 BluetoothScanningMode.ACTIVE,
             )
         else:

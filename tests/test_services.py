@@ -273,7 +273,7 @@ async def test_handle_change_pin_with_config_update(hass: HomeAssistant) -> None
 
         # Verify the updated data
         call_args = mock_update_entry.call_args
-        assert call_args[1]["data"][CONF_PIN] == 12345
+        assert call_args[1]["data"][CONF_PIN] == "12345"
 
 
 async def test_get_coordinator_missing_device_id(hass: HomeAssistant) -> None:
@@ -670,3 +670,72 @@ async def test_async_setup_services_registers_new_services(
     assert hass.services.has_service(DOMAIN, HA_SERVICE_DISCONNECT_WIFI)
     assert hass.services.has_service(DOMAIN, HA_SERVICE_ALLOW_CLOUD)
     assert hass.services.has_service(DOMAIN, HA_SERVICE_FACTORY_RESET)
+
+
+async def test_change_pin_keeps_a_leading_zero(hass: HomeAssistant) -> None:
+    """The PIN is stored as given: 01234 must not turn into 1234."""
+    mock_coordinator = MagicMock(spec=BlancoUnitCoordinator)
+    mock_coordinator.change_pin = AsyncMock()
+    mock_device_registry = MagicMock()
+    mock_device = MagicMock()
+    mock_device.config_entries = {"test_entry_id"}
+    mock_device_registry.async_get.return_value = mock_device
+    mock_entry = MagicMock()
+    mock_entry.entry_id = "test_entry_id"
+    mock_entry.runtime_data = mock_coordinator
+    mock_entry.data = {CONF_PIN: "54321"}
+
+    with (
+        patch(
+            "custom_components.blanco_unit.services.dr.async_get",
+            return_value=mock_device_registry,
+        ),
+        patch.object(hass.config_entries, "async_get_entry", return_value=mock_entry),
+        patch.object(hass.config_entries, "async_update_entry") as mock_update_entry,
+        patch.object(hass.config_entries, "async_reload"),
+    ):
+        async_setup_services(hass)
+        await hass.services.async_call(
+            DOMAIN,
+            HA_SERVICE_CHANGE_PIN,
+            {
+                HA_SERVICE_ATTR_DEVICE_ID: "test_device_id",
+                HA_SERVICE_ATTR_NEW_PIN: "01234",
+                HA_SERVICE_ATTR_UPDATE_CONFIG: True,
+            },
+            blocking=True,
+        )
+
+    assert mock_update_entry.call_args[1]["data"][CONF_PIN] == "01234"
+
+
+@pytest.mark.parametrize(
+    ("service", "data"),
+    [
+        (HA_SERVICE_CHANGE_PIN, {HA_SERVICE_ATTR_NEW_PIN: "12345"}),
+        (
+            HA_SERVICE_CONNECT_WIFI,
+            {HA_SERVICE_ATTR_SSID: "x", HA_SERVICE_ATTR_PASSWORD: "y"},
+        ),
+        (HA_SERVICE_DISCONNECT_WIFI, {}),
+        (HA_SERVICE_ALLOW_CLOUD, {}),
+        (HA_SERVICE_FACTORY_RESET, {}),
+    ],
+)
+async def test_device_changing_services_need_an_admin(
+    hass: HomeAssistant, hass_read_only_user, service: str, data: dict
+) -> None:
+    """A non-admin user cannot change the PIN, WiFi, cloud access or reset."""
+    from homeassistant.core import Context
+    from homeassistant.exceptions import Unauthorized
+
+    async_setup_services(hass)
+
+    with pytest.raises(Unauthorized):
+        await hass.services.async_call(
+            DOMAIN,
+            service,
+            {HA_SERVICE_ATTR_DEVICE_ID: "test_device_id", **data},
+            blocking=True,
+            context=Context(user_id=hass_read_only_user.id),
+        )

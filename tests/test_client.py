@@ -2498,3 +2498,21 @@ def test_secret_parameters_are_redacted_in_logs():
         "password": "**REDACTED**",
         "new_pass": "**REDACTED**",
     }
+
+
+def test_token_and_salt_are_redacted_in_logs():
+    """Token and salt together reveal the five-digit PIN by brute force."""
+    from custom_components.blanco_unit.client import _loggable_envelope
+
+    envelope = _RequestEnvelope(
+        session=1,
+        id=2,
+        token="secret-token",
+        salt="secret-salt",
+        body=_RequestBody(meta=_RequestMeta(evt_type=7, dev_id="d", dev_type=1)),
+    )
+
+    data = _loggable_envelope(envelope)
+
+    assert data["token"] == "**REDACTED**"
+    assert data["salt"] == "**REDACTED**"

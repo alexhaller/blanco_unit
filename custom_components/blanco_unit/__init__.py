@@ -298,9 +298,7 @@ async def async_reload_entry(
     hass: HomeAssistant, config_entry: BlancoUnitConfigEntry
 ) -> None:
     """Reload config entry."""
-    _LOGGER.debug(
-        "async_reload_entry async_reload with pin %s", config_entry.data["conf_pin"]
-    )
+    _LOGGER.debug("async_reload_entry called")
     await async_unload_entry(hass, config_entry)
     await async_setup_entry(hass, config_entry)
 
