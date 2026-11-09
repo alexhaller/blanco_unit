@@ -1,3 +1,9 @@
+## [2.0.3](https://github.com/alexhaller/blanco_unit/compare/v2.0.2...v2.0.3) (2026-11-09)
+
+### Bug Fixes
+
+* keep secrets out of logs, restrict device-changing services to admins ([#2](https://github.com/alexhaller/blanco_unit/issues/2)) ([dfe4361](https://github.com/alexhaller/blanco_unit/commit/dfe4361c8c9b2e168c329bd318d514979015f2c7)), closes [hacs/default#13647](https://github.com/hacs/default/issues/13647)
+
 ## [2.0.2](https://github.com/alexhaller/blanco_unit/compare/v2.0.1...v2.0.2) (2026-11-09)
 
 ### Bug Fixes
