@@ -9,10 +9,9 @@ from typing import Any
 
 from bleak.exc import BleakError
 from bleak_retry_connector import (
-    BleakClientWithServiceCache,
     BleakConnectionError,
     BleakNotFoundError,
-    establish_connection,
+    BleakOutOfConnectionSlotsError,
 )
 import probatio
 from probatio import UNDEFINED
@@ -29,6 +28,8 @@ from homeassistant.helpers.selector import (
 from .client import (
     BlancoUnitAuthenticationError,
     BlancoUnitConnectionError,
+    BlancoUnitGattTimeoutError,
+    establish_validated_connection,
     validate_pin,
 )
 from .const import (
@@ -42,6 +43,13 @@ from .const import (
 )
 
 _LOGGER = logging.getLogger(__name__)
+
+
+def _loggable(data: dict[str, Any] | None) -> dict[str, Any] | None:
+    """Return the flow data with the PIN redacted."""
+    if data is None or CONF_PIN not in data:
+        return data
+    return {**data, CONF_PIN: "**REDACTED**"}
 
 
 @dataclass
@@ -69,7 +77,9 @@ class BlancoUnitConfigFlow(ConfigFlow, domain=DOMAIN):
     ) -> probatio.Schema:
         """Return a form schema with prefilled values from data."""
         _LOGGER.debug(
-            "Load prefilled form with: %s and info %s", data, self._discovery_info
+            "Load prefilled form with: %s and info %s",
+            _loggable(data),
+            self._discovery_info,
         )
         # Setup Values
         mac: Any = UNDEFINED
@@ -118,7 +128,7 @@ class BlancoUnitConfigFlow(ConfigFlow, domain=DOMAIN):
 
     async def validate_input(self, user_input: dict[str, Any]) -> ValidationResult:
         """Set up the entry from user data."""
-        _LOGGER.debug("validate_input %s", user_input)
+        _LOGGER.debug("validate_input %s", _loggable(user_input))
 
         # Validate MAC address format
         if not bool(
@@ -171,16 +181,10 @@ class BlancoUnitConfigFlow(ConfigFlow, domain=DOMAIN):
                 mac_to_store,
             )
 
-            _LOGGER.debug("await establish_connection")
-            client = await establish_connection(
-                client_class=BleakClientWithServiceCache,
-                device=device,
-                name=device.name or "Unknown Device",
-                timeout=120,
+            _LOGGER.debug("await establish_validated_connection")
+            client, validation = await establish_validated_connection(
+                device, lambda client: validate_pin(client, pin_str), timeout=120
             )
-
-            _LOGGER.debug("await validate_pin")
-            validation = await validate_pin(client, pin_str)
             _LOGGER.debug(
                 "validate_pin returned %s, dev_id: %s, dev_type: %s",
                 validation.is_valid,
@@ -209,6 +213,13 @@ class BlancoUnitConfigFlow(ConfigFlow, domain=DOMAIN):
         except BlancoUnitAuthenticationError as err:
             _LOGGER.warning("Authentication failed during validation: %s", err)
             return ValidationResult({CONF_ERROR: "error_invalid_authentication"})
+        except BleakOutOfConnectionSlotsError as err:
+            _LOGGER.error("No free Bluetooth connection slot: %s", err)
+            return ValidationResult({CONF_ERROR: "error_no_connection_slot"})
+        except BlancoUnitGattTimeoutError as err:
+            # still stuck after reconnecting once
+            _LOGGER.error("Device did not respond: %s", err)
+            return ValidationResult({CONF_ERROR: "error_device_not_responding"})
         except BleakNotFoundError as err:
             _LOGGER.error("Device not found / unreachable: %s", err)
             return ValidationResult(
@@ -266,7 +277,7 @@ class BlancoUnitConfigFlow(ConfigFlow, domain=DOMAIN):
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Create the entry with unique id if not already configured."""
-        _LOGGER.debug("async_step_user %s", user_input)
+        _LOGGER.debug("async_step_user %s", _loggable(user_input))
         result = ValidationResult(errors={})
         if user_input is not None:
             result = await self.validate_input(user_input)
@@ -284,7 +295,7 @@ class BlancoUnitConfigFlow(ConfigFlow, domain=DOMAIN):
                 config_data[CONF_MAC] = result.mac_address
                 config_data[CONF_DEV_ID] = result.dev_id
 
-                _LOGGER.debug("Create entry with %s", config_data)
+                _LOGGER.debug("Create entry with %s", _loggable(config_data))
                 # Clean up discovery_info after successful validation
                 self._discovery_info = None
                 return self.async_create_entry(
@@ -303,7 +314,7 @@ class BlancoUnitConfigFlow(ConfigFlow, domain=DOMAIN):
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Handle re-authentication."""
-        _LOGGER.debug("async_step_reauth %s", user_input)
+        _LOGGER.debug("async_step_reauth %s", _loggable(user_input))
         result = ValidationResult(errors={})
         config_entry = self._get_reauth_entry()
         if user_input is not None:
@@ -342,7 +353,7 @@ class BlancoUnitConfigFlow(ConfigFlow, domain=DOMAIN):
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Handle re-configuration."""
-        _LOGGER.debug("async_step_reconfigure %s", user_input)
+        _LOGGER.debug("async_step_reconfigure %s", _loggable(user_input))
         result = ValidationResult(errors={})
         config_entry = self._get_reconfigure_entry()
         if user_input is not None:

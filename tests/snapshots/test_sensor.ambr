@@ -128,8 +128,8 @@
     'object_id_base': 'CO2 Cylinder Remaining',
     'options': dict({
     }),
-    'original_device_class': <SensorDeviceClass.BATTERY: 'battery'>,
-    'original_icon': None,
+    'original_device_class': None,
+    'original_icon': 'mdi:history',
     'original_name': 'CO2 Cylinder Remaining',
     'platform': 'blanco_unit',
     'previous_unique_id': None,
@@ -143,8 +143,8 @@
 # name: test_all_entities[sensor.test_blanco_unit_co2_cylinder_remaining-state]
   StateSnapshot({
     'attributes': ReadOnlyDict({
-      <EntityStateAttribute.DEVICE_CLASS: 'device_class'>: 'battery',
       <EntityStateAttribute.FRIENDLY_NAME: 'friendly_name'>: 'Test Blanco Unit CO2 Cylinder Remaining',
+      <EntityStateAttribute.ICON: 'icon'>: 'mdi:history',
       <SensorEntityCapabilityAttribute.STATE_CLASS: 'state_class'>: <SensorStateClass.MEASUREMENT: 'measurement'>,
       <EntityStateAttribute.UNIT_OF_MEASUREMENT: 'unit_of_measurement'>: '%',
     }),
@@ -489,8 +489,8 @@
     'object_id_base': 'Filter Capacity Remaining',
     'options': dict({
     }),
-    'original_device_class': <SensorDeviceClass.BATTERY: 'battery'>,
-    'original_icon': None,
+    'original_device_class': None,
+    'original_icon': 'mdi:history',
     'original_name': 'Filter Capacity Remaining',
     'platform': 'blanco_unit',
     'previous_unique_id': None,
@@ -504,8 +504,8 @@
 # name: test_all_entities[sensor.test_blanco_unit_filter_capacity_remaining-state]
   StateSnapshot({
     'attributes': ReadOnlyDict({
-      <EntityStateAttribute.DEVICE_CLASS: 'device_class'>: 'battery',
       <EntityStateAttribute.FRIENDLY_NAME: 'friendly_name'>: 'Test Blanco Unit Filter Capacity Remaining',
+      <EntityStateAttribute.ICON: 'icon'>: 'mdi:history',
       <SensorEntityCapabilityAttribute.STATE_CLASS: 'state_class'>: <SensorStateClass.MEASUREMENT: 'measurement'>,
       <EntityStateAttribute.UNIT_OF_MEASUREMENT: 'unit_of_measurement'>: '%',
     }),

@@ -3,7 +3,8 @@
 from __future__ import annotations
 
 import asyncio
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
+import contextlib
 from dataclasses import asdict, dataclass, field
 import hashlib
 import json
@@ -14,9 +15,14 @@ import time
 from typing import Any
 
 from bleak import BleakClient
+from bleak.backends import BleakBackend
 from bleak.backends.device import BLEDevice
 from bleak.exc import BleakGATTProtocolError, BleakGATTProtocolErrorCode
-from bleak_retry_connector import BleakClientWithServiceCache, establish_connection
+from bleak_retry_connector import (
+    BleakClientWithServiceCache,
+    close_stale_connections_by_address,
+    establish_connection,
+)
 
 from .const import CHARACTERISTIC_UUID, MTU_SIZE
 from .data import (
@@ -29,6 +35,13 @@ from .data import (
 )
 
 _LOGGER = logging.getLogger(__name__)
+
+# BlueZ can keep a GATT operation pending forever, so each one gets a limit
+GATT_TIMEOUT = 10
+# Time for a device removed from BlueZ to be discovered again
+REDISCOVERY_DELAY = 5
+# Request parameters that must not end up in logs
+SECRET_PARS = ("new_pass", "password")
 
 # -------------------------------
 # region Exceptions
@@ -52,6 +65,14 @@ class BlancoUnitConnectionError(BlancoUnitClientError):
 
     def __init__(self, message: str = "Connection failed") -> None:
         """Initialize BlancoUnitConnectionError."""
+        super().__init__(message)
+
+
+class BlancoUnitGattTimeoutError(BlancoUnitConnectionError):
+    """Exception raised when a GATT read or write does not complete."""
+
+    def __init__(self, message: str = "GATT operation timed out") -> None:
+        """Initialize BlancoUnitGattTimeoutError."""
         super().__init__(message)
 
 
@@ -220,6 +241,18 @@ class _AllowCloudServicesPars:
         return {"rca_id": self.rca_id}
 
 
+def _loggable_envelope(envelope: _RequestEnvelope) -> dict[str, Any]:
+    """Return the request envelope with secret parameters redacted."""
+    data = envelope.to_dict()
+    body = data.get("body")
+    if isinstance(body, dict) and (pars := body.get("pars")):
+        body["pars"] = {
+            key: "**REDACTED**" if key in SECRET_PARS else value
+            for key, value in pars.items()
+        }
+    return data
+
+
 # -------------------------------
 # region Protocol Helper
 # -------------------------------
@@ -335,10 +368,15 @@ class _BlancoUnitProtocol:
         for idx, packet in enumerate(packets, start=1):
             for attempt in range(1, _WRITE_ATTEMPTS + 1):
                 try:
-                    await client.write_gatt_char(
-                        CHARACTERISTIC_UUID, packet, response=True
-                    )
+                    async with asyncio.timeout(GATT_TIMEOUT):
+                        await client.write_gatt_char(
+                            CHARACTERISTIC_UUID, packet, response=True
+                        )
                     break
+                except TimeoutError as err:
+                    raise BlancoUnitGattTimeoutError(
+                        f"Write of packet {idx}/{len(packets)} did not complete"
+                    ) from err
                 except BleakGATTProtocolError as err:
                     retryable = err.code in _TRANSIENT_GATT_ERRORS
                     if not retryable or attempt == _WRITE_ATTEMPTS:
@@ -383,7 +421,10 @@ class _BlancoUnitProtocol:
         while len(chunks) < expected and attempts < max_attempts:
             attempts += 1
             try:
-                data = await client.read_gatt_char(CHARACTERISTIC_UUID)
+                async with asyncio.timeout(GATT_TIMEOUT):
+                    data = await client.read_gatt_char(CHARACTERISTIC_UUID)
+            except TimeoutError as err:
+                raise BlancoUnitGattTimeoutError("Read did not complete") from err
             except Exception as err:  # noqa: BLE001
                 read_errors += 1
                 last_error = err
@@ -474,7 +515,7 @@ class _BlancoUnitProtocol:
         request_dict = envelope.to_dict()
         packets = self.create_packets(request_dict, self.msg_id_counter)
 
-        _LOGGER.debug("Sending pairing data: %s", request_dict)
+        _LOGGER.debug("Sending pairing data: %s", _loggable_envelope(envelope))
         _LOGGER.debug(
             "Sending pairing request (ReqID: %s, %d packets)", req_id, len(packets)
         )
@@ -516,7 +557,7 @@ class _BlancoUnitProtocol:
         request_dict = envelope.to_dict()
         packets = self.create_packets(request_dict, self.msg_id_counter)
 
-        _LOGGER.debug("Sending data: %s from %s", request_dict, body)
+        _LOGGER.debug("Sending data: %s", _loggable_envelope(envelope))
         _LOGGER.debug("Sending request (ReqID: %s, %d packets)", req_id, len(packets))
 
         await self._write_packets(client, packets)
@@ -578,8 +619,12 @@ class BlancoUnitBluetoothClient:
 
     async def disconnect(self) -> None:
         """Disconnect from the Blanco Unit BLE device if connected."""
-        if self._session_data:
-            await self._session_data.client.disconnect()
+        session_data = self._session_data
+        if session_data is None:
+            return
+        self._session_data = None
+        self._connection_callback(False)
+        await session_data.client.disconnect()
 
     async def _connect(self) -> _BlancoUnitSessionData:
         """Connect to the device if not already connected and authenticate."""
@@ -589,19 +634,19 @@ class BlancoUnitBluetoothClient:
                 _LOGGER.debug("Already connected")
                 return self._session_data
 
-            client = await establish_connection(
-                client_class=BleakClientWithServiceCache,
-                device=self._device,
-                name=self._device.name or "Unknown Device",
+            async def _validate(
+                client: BleakClient,
+            ) -> tuple[_BlancoUnitProtocol, PinValidationResult]:
+                # Create protocol instance sized to the negotiated ATT MTU
+                protocol = await _protocol_for_client(client)
+                return protocol, await self._perform_pairing(client, protocol)
+
+            client, (protocol, result) = await establish_validated_connection(
+                self._device,
+                _validate,
                 disconnected_callback=self._handle_disconnect,
                 timeout=120,
             )
-
-            # Create protocol instance sized to the negotiated ATT MTU
-            protocol = await _protocol_for_client(client)
-
-            # Perform initial pairing
-            result = await self._perform_pairing(client, protocol)
 
             _LOGGER.debug(
                 "Connected and paired with device ID: %s, device type: %d",
@@ -617,9 +662,12 @@ class BlancoUnitBluetoothClient:
             self._connection_callback(self._session_data.client.is_connected)
             return self._session_data
 
-    def _handle_disconnect(self, _: BleakClient) -> None:
+    def _handle_disconnect(self, client: BleakClient) -> None:
         """Reset session and call connection callback."""
         _LOGGER.debug("Device disconnected")
+        # a late callback of a previous client must not drop the current session
+        if self._session_data is None or self._session_data.client is not client:
+            return
         self._session_data = None
         self._connection_callback(False)
 
@@ -656,15 +704,23 @@ class BlancoUnitBluetoothClient:
         """Execute a request-response transaction."""
         session_data = await self._connect()
 
-        response = await session_data.protocol.send_request(
-            client=session_data.client,
-            pin=self._pin,
-            dev_id=session_data.dev_id,
-            dev_type=session_data.dev_type,
-            evt_type=evt_type,
-            ctrl=ctrl,
-            pars=pars,
-        )
+        try:
+            response = await session_data.protocol.send_request(
+                client=session_data.client,
+                pin=self._pin,
+                dev_id=session_data.dev_id,
+                dev_type=session_data.dev_type,
+                evt_type=evt_type,
+                ctrl=ctrl,
+                pars=pars,
+            )
+        except BaseException as err:
+            if isinstance(err, BlancoUnitGattTimeoutError):
+                await _remove_device(session_data.client)
+            # the link may be half dead, reconnect on the next call
+            with contextlib.suppress(Exception):
+                await self.disconnect()
+            raise
 
         # Check for errors
         errors = session_data.protocol.extract_errors(response)
@@ -1158,6 +1214,73 @@ async def _protocol_for_client(client: BleakClient) -> _BlancoUnitProtocol:
     return _BlancoUnitProtocol(mtu=protocol_mtu)
 
 
+async def _remove_device(client: BleakClient) -> None:
+    """Close a connection whose GATT operation did not complete.
+
+    BlueZ keeps such an operation after the link drops, only removing the
+    device from BlueZ clears it. Other backends, like an ESPHome proxy, do not
+    have that problem, so they keep their bond and are only disconnected.
+    """
+    if client.backend_id == BleakBackend.BLUEZ_DBUS:
+        with contextlib.suppress(Exception):
+            await client.unpair()
+    with contextlib.suppress(Exception):
+        await client.disconnect()
+
+
+async def establish_validated_connection[T](
+    device: BLEDevice,
+    validate: Callable[[BleakClient], Awaitable[T]],
+    **connect_kwargs: Any,
+) -> tuple[BleakClient, T]:
+    """Connect to the device, bond with it and run validate on the connection.
+
+    The connection is closed when validate fails. BlueZ keeps a GATT operation
+    that was pending when the link dropped forever, every later one on that
+    characteristic then never completes. Only removing the device clears it, so
+    after a GATT timeout a BlueZ device is removed, and any device is connected
+    once more.
+
+    Raises:
+        BlancoUnitGattTimeoutError: If GATT operations still time out after
+            reconnecting.
+        Any exception of establish_connection or validate.
+    """
+    reconnected = False
+    while True:
+        # a link left open by a previous run keeps the device busy
+        with contextlib.suppress(Exception):
+            await close_stale_connections_by_address(device.address)
+
+        client = await establish_connection(
+            client_class=BleakClientWithServiceCache,
+            device=device,
+            name=device.name or "Unknown Device",
+            # without a bond BlueZ fails service discovery
+            pair=True,
+            **connect_kwargs,
+        )
+        try:
+            return client, await validate(client)
+        except BlancoUnitGattTimeoutError:
+            await _remove_device(client)
+            if reconnected:
+                raise
+            reconnected = True
+            _LOGGER.warning(
+                "GATT operation on %s did not complete, connecting again (%s)",
+                device.address,
+                "removed the device from BlueZ"
+                if client.backend_id == BleakBackend.BLUEZ_DBUS
+                else "kept the bond",
+            )
+            await asyncio.sleep(REDISCOVERY_DELAY)
+        except BaseException:
+            with contextlib.suppress(Exception):
+                await client.disconnect()
+            raise
+
+
 async def validate_pin(
     client: BleakClient, pin: str, protocol: _BlancoUnitProtocol | None = None
 ) -> PinValidationResult:
@@ -1184,7 +1307,7 @@ async def validate_pin(
     if len(pin) != 5 or not pin.isdigit():
         raise ValueError("PIN must be exactly 5 digits")
 
-    _LOGGER.debug("Validating PIN %s", pin)
+    _LOGGER.debug("Validating PIN")
 
     # Use provided protocol or create one sized to the negotiated ATT MTU
     if protocol is None:

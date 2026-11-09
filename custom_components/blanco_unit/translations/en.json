@@ -36,6 +36,8 @@
       "error_device_not_found": "Device not found. Please ensure the Blanco Unit is powered on and in Bluetooth range.",
       "error_invalid_authentication": "Authentication failed. Please check that the PIN is correct.",
       "error_device_unreachable": "Could not reach the device. Make sure it is powered on, in Bluetooth range, and not already connected to another app: {error}",
+      "error_no_connection_slot": "No free Bluetooth connection slot. Disconnect another Bluetooth device from the adapter or proxy, or add a Bluetooth proxy, then try again.",
+      "error_device_not_responding": "The Blanco Unit did not respond over Bluetooth, even after reconnecting. Reboot the Home Assistant host (restarting only Home Assistant is not enough) or restart the Bluetooth proxy, then try again. If that does not help, restart the Blanco Unit.",
       "error_connection": "Could not communicate with the device: {error}",
       "error_unknown": "Failed to connect to the device: {error}"
     },

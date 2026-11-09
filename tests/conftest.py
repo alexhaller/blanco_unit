@@ -101,6 +101,18 @@ def mock_coordinator_fixture(mock_blanco_unit_data):
     return coordinator
 
 
+@pytest.fixture(autouse=True)
+def mock_close_stale_connections():
+    """Skip the BlueZ lookup for stale connections, there is no BlueZ in tests."""
+    from unittest.mock import AsyncMock, patch
+
+    with patch(
+        "custom_components.blanco_unit.client.close_stale_connections_by_address",
+        AsyncMock(),
+    ) as mock:
+        yield mock
+
+
 @pytest.fixture(name="mock_bluetooth_device")
 def mock_bluetooth_device_fixture():
     """Return a mock Bluetooth device."""
