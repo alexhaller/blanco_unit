@@ -1179,3 +1179,47 @@ async def test_coordinator_factory_reset(
         )
 
         await coordinator.factory_reset()
+
+
+async def test_random_mac_listens_for_the_advertised_service(
+    hass: HomeAssistant, mock_device, mock_config_entry
+) -> None:
+    """The device advertises SERVICE_UUID, never the characteristic UUID."""
+    from custom_components.blanco_unit.const import RANDOM_MAC_PLACEHOLDER, SERVICE_UUID
+
+    mock_config_entry.data = {CONF_MAC: RANDOM_MAC_PLACEHOLDER, CONF_PIN: "12345"}
+    with (
+        patch("custom_components.blanco_unit.coordinator.BlancoUnitBluetoothClient"),
+        patch(
+            "custom_components.blanco_unit.coordinator.bluetooth.async_track_unavailable"
+        ),
+        patch(
+            "custom_components.blanco_unit.coordinator.bluetooth.async_register_callback"
+        ) as mock_register_callback,
+    ):
+        BlancoUnitCoordinator(hass, mock_config_entry, mock_device, MagicMock())
+
+    matcher = mock_register_callback.call_args.args[2]
+    assert matcher["service_uuid"] == SERVICE_UUID
+
+
+@pytest.mark.parametrize(("stored", "expected"), [("01234", "01234"), (1234, "01234")])
+async def test_pin_is_padded_to_five_digits(
+    hass: HomeAssistant, mock_device, mock_config_entry, stored, expected: str
+) -> None:
+    """Older versions stored the PIN as a number and lost its leading zero."""
+    mock_config_entry.data = {CONF_MAC: "AA:BB:CC:DD:EE:FF", CONF_PIN: stored}
+    with (
+        patch(
+            "custom_components.blanco_unit.coordinator.BlancoUnitBluetoothClient"
+        ) as mock_client_class,
+        patch(
+            "custom_components.blanco_unit.coordinator.bluetooth.async_track_unavailable"
+        ),
+        patch(
+            "custom_components.blanco_unit.coordinator.bluetooth.async_register_callback"
+        ),
+    ):
+        BlancoUnitCoordinator(hass, mock_config_entry, mock_device, MagicMock())
+
+    assert mock_client_class.call_args.kwargs["pin"] == expected

@@ -8,7 +8,9 @@ import probatio
 from homeassistant.core import HomeAssistant, ServiceCall, SupportsResponse
 from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers import config_validation as cv, device_registry as dr
+from homeassistant.helpers.service import async_register_admin_service
 
+from .client import SECRET_PARS
 from .const import (
     CONF_PIN,
     DOMAIN,
@@ -118,7 +120,10 @@ def async_setup_services(hass: HomeAssistant) -> None:
 
     async def handle_change_pin(call: ServiceCall) -> None:
         """Handle the change_pin service call."""
-        _LOGGER.debug("Change PIN service called with data: %s", call.data)
+        _LOGGER.debug(
+            "Change PIN service called for device %s",
+            call.data[HA_SERVICE_ATTR_DEVICE_ID],
+        )
         coordinator = _get_coordinator(hass, call)
         new_pin = call.data[HA_SERVICE_ATTR_NEW_PIN]
         update_config = call.data[HA_SERVICE_ATTR_UPDATE_CONFIG]
@@ -138,7 +143,7 @@ def async_setup_services(hass: HomeAssistant) -> None:
                     # Update the config entry with the new PIN
                     hass.config_entries.async_update_entry(
                         entry,
-                        data={**entry.data, CONF_PIN: int(new_pin)},
+                        data={**entry.data, CONF_PIN: new_pin},
                     )
                     _LOGGER.info("Updated config entry with new PIN")
                     # Reload the config entry to reconnect with new PIN
@@ -147,7 +152,10 @@ def async_setup_services(hass: HomeAssistant) -> None:
     async def handle_scan_protocol(call: ServiceCall) -> dict:
         """Handle the scan_protocol_parameters service call."""
 
-        _LOGGER.debug("Scan protocol service called with data: %s", call.data)
+        _LOGGER.debug(
+            "Scan protocol service called for device %s",
+            call.data[HA_SERVICE_ATTR_DEVICE_ID],
+        )
         coordinator = _get_coordinator(hass, call)
 
         # Extract parameters from the data object
@@ -160,7 +168,10 @@ def async_setup_services(hass: HomeAssistant) -> None:
             "Testing protocol parameters: evt_type=%d, ctrl=%s, pars=%s",
             evt_type,
             ctrl,
-            pars,
+            {
+                key: "**REDACTED**" if key in SECRET_PARS else value
+                for key, value in (pars or {}).items()
+            },
         )
 
         # Test the specific parameter combination
@@ -195,7 +206,11 @@ def async_setup_services(hass: HomeAssistant) -> None:
 
     async def handle_connect_wifi(call: ServiceCall) -> None:
         """Handle the connect_wifi service call."""
-        _LOGGER.debug("Connect WiFi service called with data: %s", call.data)
+        _LOGGER.debug(
+            "Connect WiFi service called for device %s, ssid %s",
+            call.data[HA_SERVICE_ATTR_DEVICE_ID],
+            call.data[HA_SERVICE_ATTR_SSID],
+        )
         coordinator = _get_coordinator(hass, call)
         ssid = call.data[HA_SERVICE_ATTR_SSID]
         password = call.data[HA_SERVICE_ATTR_PASSWORD]
@@ -227,14 +242,16 @@ def async_setup_services(hass: HomeAssistant) -> None:
         schema=SERVICE_DISPENSE_WATER_SCHEMA,
     )
 
-    hass.services.async_register(
+    async_register_admin_service(
+        hass,
         DOMAIN,
         HA_SERVICE_CHANGE_PIN,
         handle_change_pin,
         schema=SERVICE_CHANGE_PIN_SCHEMA,
     )
 
-    hass.services.async_register(
+    async_register_admin_service(
+        hass,
         DOMAIN,
         HA_SERVICE_SCAN_PROTOCOL,
         handle_scan_protocol,
@@ -250,28 +267,32 @@ def async_setup_services(hass: HomeAssistant) -> None:
         supports_response=SupportsResponse.ONLY,
     )
 
-    hass.services.async_register(
+    async_register_admin_service(
+        hass,
         DOMAIN,
         HA_SERVICE_CONNECT_WIFI,
         handle_connect_wifi,
         schema=SERVICE_CONNECT_WIFI_SCHEMA,
     )
 
-    hass.services.async_register(
+    async_register_admin_service(
+        hass,
         DOMAIN,
         HA_SERVICE_DISCONNECT_WIFI,
         handle_disconnect_wifi,
         schema=SERVICE_DEVICE_ONLY_SCHEMA,
     )
 
-    hass.services.async_register(
+    async_register_admin_service(
+        hass,
         DOMAIN,
         HA_SERVICE_ALLOW_CLOUD,
         handle_allow_cloud_services,
         schema=SERVICE_ALLOW_CLOUD_SCHEMA,
     )
 
-    hass.services.async_register(
+    async_register_admin_service(
+        hass,
         DOMAIN,
         HA_SERVICE_FACTORY_RESET,
         handle_factory_reset,

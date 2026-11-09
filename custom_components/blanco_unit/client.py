@@ -242,8 +242,15 @@ class _AllowCloudServicesPars:
 
 
 def _loggable_envelope(envelope: _RequestEnvelope) -> dict[str, Any]:
-    """Return the request envelope with secret parameters redacted."""
+    """Return the request envelope with secret parameters redacted.
+
+    The token is sha256(sha256(pin) + salt): with both in a log, the five-digit
+    PIN falls to 100000 hashes, so neither is logged.
+    """
     data = envelope.to_dict()
+    for key in ("token", "salt"):
+        if key in data:
+            data[key] = "**REDACTED**"
     body = data.get("body")
     if isinstance(body, dict) and (pars := body.get("pars")):
         body["pars"] = {
