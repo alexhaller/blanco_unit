@@ -1,3 +1,9 @@
+## [3.0.1](https://github.com/alexhaller/blanco_unit/compare/v3.0.0...v3.0.1) (2026-11-23)
+
+### Bug Fixes
+
+* take over the old entry when the integration is added ([#5](https://github.com/alexhaller/blanco_unit/issues/5)) ([4441cdf](https://github.com/alexhaller/blanco_unit/commit/4441cdf3d2d2305556889b278123ac340fb426fc))
+
 ## [3.0.0](https://github.com/alexhaller/blanco_unit/compare/v2.0.4...v3.0.0) (2026-11-23)
 
 ### ⚠ BREAKING CHANGES
