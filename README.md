@@ -57,9 +57,12 @@ have to be removed once:
    is what gets migrated.
 3. Restart Home Assistant.
 4. Install **Blanco Unit (BLE)** from the Marketplace and restart again.
+5. Go to *Settings → Devices & services → Add integration → Blanco Unit (BLE)*.
+   It asks for nothing: it takes over the old entry right away. (Bluetooth
+   discovery of the device does the same on its own.)
 
-On that start the old entry is moved to the new domain: the device, its entities,
-their entity IDs and history stay. Service calls change their prefix from
+The old entry is moved to the new domain: the device, its entities, their entity
+IDs and history stay. Service calls change their prefix from
 `blanco_unit.` to `blanco_unit_ha.`, so update scripts and automations that call
 them.
 

@@ -23,6 +23,7 @@ from homeassistant.helpers.selector import (
     TextSelectorConfig,
     TextSelectorType,
 )
+from homeassistant.loader import IntegrationNotFound, async_get_integration
 from probatio import UNDEFINED
 
 from .client import (
@@ -39,6 +40,7 @@ from .const import (
     CONF_NAME,
     CONF_PIN,
     DOMAIN,
+    LEGACY_DOMAIN,
     RANDOM_MAC_PLACEHOLDER,
 )
 
@@ -264,10 +266,36 @@ class BlancoUnitConfigFlow(ConfigFlow, domain=DOMAIN):
             title=import_data["title"], data=import_data["data"]
         )
 
+    async def _async_adopt_legacy(self) -> ConfigFlowResult | None:
+        """Take over an entry left under the old domain, if there is one.
+
+        Home Assistant only loads an integration at startup when it has an
+        entry, so the import in async_setup never runs on its own after the
+        domain change. Adding the integration, by hand or through Bluetooth
+        discovery, creates the entry from the old one instead; setting it up
+        then moves the old device and entities over.
+        """
+        try:
+            await async_get_integration(self.hass, LEGACY_DOMAIN)
+        except IntegrationNotFound:
+            pass
+        else:
+            # The old folder is still installed: nothing may move yet
+            return None
+        configured = {entry.unique_id for entry in self._async_current_entries()}
+        for legacy in self.hass.config_entries.async_entries(LEGACY_DOMAIN):
+            if legacy.unique_id is None or legacy.unique_id in configured:
+                continue
+            await self.async_set_unique_id(legacy.unique_id)
+            return self.async_create_entry(title=legacy.title, data=dict(legacy.data))
+        return None
+
     async def async_step_bluetooth(
         self, discovery_info: BluetoothServiceInfoBleak
     ) -> ConfigFlowResult:
         """Handle a bluetooth device being discovered."""
+        if (adopted := await self._async_adopt_legacy()) is not None:
+            return adopted
         _LOGGER.debug(
             "async_step_bluetooth called with %s and advertisement %s",
             discovery_info,
@@ -290,6 +318,8 @@ class BlancoUnitConfigFlow(ConfigFlow, domain=DOMAIN):
     ) -> ConfigFlowResult:
         """Create the entry with unique id if not already configured."""
         _LOGGER.debug("async_step_user %s", _loggable(user_input))
+        if user_input is None and (adopted := await self._async_adopt_legacy()):
+            return adopted
         result = ValidationResult(errors={})
         if user_input is not None:
             result = await self.validate_input(user_input)
