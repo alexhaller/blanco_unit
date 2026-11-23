@@ -9,7 +9,7 @@ import voluptuous as vol
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.exceptions import ServiceValidationError
 
-from custom_components.blanco_unit.const import (
+from custom_components.blanco_unit_ha.const import (
     CONF_PIN,
     DOMAIN,
     HA_SERVICE_ALLOW_CLOUD,
@@ -28,9 +28,9 @@ from custom_components.blanco_unit.const import (
     HA_SERVICE_FACTORY_RESET,
     HA_SERVICE_SCAN_WIFI,
 )
-from custom_components.blanco_unit.coordinator import BlancoUnitCoordinator
-from custom_components.blanco_unit.data import BlancoUnitWifiNetwork
-from custom_components.blanco_unit.services import (
+from custom_components.blanco_unit_ha.coordinator import BlancoUnitCoordinator
+from custom_components.blanco_unit_ha.data import BlancoUnitWifiNetwork
+from custom_components.blanco_unit_ha.services import (
     SERVICE_ALLOW_CLOUD_SCHEMA,
     SERVICE_CHANGE_PIN_SCHEMA,
     SERVICE_CONNECT_WIFI_SCHEMA,
@@ -175,7 +175,7 @@ async def test_handle_dispense_water(hass: HomeAssistant) -> None:
 
     with (
         patch(
-            "custom_components.blanco_unit.services.dr.async_get",
+            "custom_components.blanco_unit_ha.services.dr.async_get",
             return_value=mock_device_registry,
         ),
         patch.object(hass.config_entries, "async_get_entry", return_value=mock_entry),
@@ -211,7 +211,7 @@ async def test_handle_change_pin_without_config_update(hass: HomeAssistant) -> N
 
     with (
         patch(
-            "custom_components.blanco_unit.services.dr.async_get",
+            "custom_components.blanco_unit_ha.services.dr.async_get",
             return_value=mock_device_registry,
         ),
         patch.object(hass.config_entries, "async_get_entry", return_value=mock_entry),
@@ -249,7 +249,7 @@ async def test_handle_change_pin_with_config_update(hass: HomeAssistant) -> None
 
     with (
         patch(
-            "custom_components.blanco_unit.services.dr.async_get",
+            "custom_components.blanco_unit_ha.services.dr.async_get",
             return_value=mock_device_registry,
         ),
         patch.object(hass.config_entries, "async_get_entry", return_value=mock_entry),
@@ -463,7 +463,7 @@ async def test_handle_scan_wifi_networks(hass: HomeAssistant) -> None:
 
     with (
         patch(
-            "custom_components.blanco_unit.services.dr.async_get",
+            "custom_components.blanco_unit_ha.services.dr.async_get",
             return_value=mock_device_registry,
         ),
         patch.object(hass.config_entries, "async_get_entry", return_value=mock_entry),
@@ -501,7 +501,7 @@ async def test_handle_connect_wifi(hass: HomeAssistant) -> None:
 
     with (
         patch(
-            "custom_components.blanco_unit.services.dr.async_get",
+            "custom_components.blanco_unit_ha.services.dr.async_get",
             return_value=mock_device_registry,
         ),
         patch.object(hass.config_entries, "async_get_entry", return_value=mock_entry),
@@ -537,7 +537,7 @@ async def test_handle_disconnect_wifi(hass: HomeAssistant) -> None:
 
     with (
         patch(
-            "custom_components.blanco_unit.services.dr.async_get",
+            "custom_components.blanco_unit_ha.services.dr.async_get",
             return_value=mock_device_registry,
         ),
         patch.object(hass.config_entries, "async_get_entry", return_value=mock_entry),
@@ -569,7 +569,7 @@ async def test_handle_allow_cloud_services(hass: HomeAssistant) -> None:
 
     with (
         patch(
-            "custom_components.blanco_unit.services.dr.async_get",
+            "custom_components.blanco_unit_ha.services.dr.async_get",
             return_value=mock_device_registry,
         ),
         patch.object(hass.config_entries, "async_get_entry", return_value=mock_entry),
@@ -606,7 +606,7 @@ async def test_handle_allow_cloud_services_default_rca_id(
 
     with (
         patch(
-            "custom_components.blanco_unit.services.dr.async_get",
+            "custom_components.blanco_unit_ha.services.dr.async_get",
             return_value=mock_device_registry,
         ),
         patch.object(hass.config_entries, "async_get_entry", return_value=mock_entry),
@@ -638,7 +638,7 @@ async def test_handle_factory_reset(hass: HomeAssistant) -> None:
 
     with (
         patch(
-            "custom_components.blanco_unit.services.dr.async_get",
+            "custom_components.blanco_unit_ha.services.dr.async_get",
             return_value=mock_device_registry,
         ),
         patch.object(hass.config_entries, "async_get_entry", return_value=mock_entry),
@@ -689,7 +689,7 @@ async def test_change_pin_keeps_a_leading_zero(hass: HomeAssistant) -> None:
 
     with (
         patch(
-            "custom_components.blanco_unit.services.dr.async_get",
+            "custom_components.blanco_unit_ha.services.dr.async_get",
             return_value=mock_device_registry,
         ),
         patch.object(hass.config_entries, "async_get_entry", return_value=mock_entry),

@@ -9,7 +9,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 import pytest
 from bleak.backends.device import BLEDevice
 
-from custom_components.blanco_unit.client import (
+from custom_components.blanco_unit_ha.client import (
     BlancoUnitAuthenticationError,
     BlancoUnitBluetoothClient,
     BlancoUnitClientError,
@@ -756,7 +756,7 @@ def test_bluetooth_client_device_id_when_not_connected():
 
 def test_bluetooth_client_device_id_when_connected():
     """Test device_id property returns device ID when connected."""
-    from custom_components.blanco_unit.client import _BlancoUnitSessionData
+    from custom_components.blanco_unit_ha.client import _BlancoUnitSessionData
 
     device = BLEDevice(address="AA:BB:CC:DD:EE:FF", name="Test Device", details={})
     callback = MagicMock()
@@ -790,7 +790,7 @@ def test_bluetooth_client_is_connected_when_not_connected():
 
 def test_bluetooth_client_is_connected_when_connected():
     """Test is_connected property returns True when connected."""
-    from custom_components.blanco_unit.client import _BlancoUnitSessionData
+    from custom_components.blanco_unit_ha.client import _BlancoUnitSessionData
 
     device = BLEDevice(address="AA:BB:CC:DD:EE:FF", name="Test Device", details={})
     callback = MagicMock()
@@ -815,7 +815,7 @@ def test_bluetooth_client_is_connected_when_connected():
 @pytest.mark.asyncio
 async def test_bluetooth_client_disconnect_when_connected():
     """Test disconnect method when client is connected."""
-    from custom_components.blanco_unit.client import _BlancoUnitSessionData
+    from custom_components.blanco_unit_ha.client import _BlancoUnitSessionData
 
     device = BLEDevice(address="AA:BB:CC:DD:EE:FF", name="Test Device", details={})
     callback = MagicMock()
@@ -852,7 +852,7 @@ async def test_bluetooth_client_disconnect_when_not_connected():
 
 
 @pytest.mark.asyncio
-@patch("custom_components.blanco_unit.client.establish_connection")
+@patch("custom_components.blanco_unit_ha.client.establish_connection")
 async def test_bluetooth_client_connect_first_time(mock_establish):
     """Test _connect method on first connection."""
     device = BLEDevice(address="AA:BB:CC:DD:EE:FF", name="Test Device", details={})
@@ -888,10 +888,10 @@ async def test_bluetooth_client_connect_first_time(mock_establish):
 
 
 @pytest.mark.asyncio
-@patch("custom_components.blanco_unit.client.establish_connection")
+@patch("custom_components.blanco_unit_ha.client.establish_connection")
 async def test_bluetooth_client_connect_already_connected(mock_establish):
     """Test _connect method when already connected."""
-    from custom_components.blanco_unit.client import _BlancoUnitSessionData
+    from custom_components.blanco_unit_ha.client import _BlancoUnitSessionData
 
     device = BLEDevice(address="AA:BB:CC:DD:EE:FF", name="Test Device", details={})
     callback = MagicMock()
@@ -926,7 +926,7 @@ def test_bluetooth_client_handle_disconnect():
     )
 
     # Set session data
-    from custom_components.blanco_unit.client import _BlancoUnitSessionData
+    from custom_components.blanco_unit_ha.client import _BlancoUnitSessionData
 
     mock_ble_client = AsyncMock()
     mock_ble_client.mtu_size = 517
@@ -1007,7 +1007,7 @@ async def test_bluetooth_client_perform_pairing_wrong_pin():
 
 
 @pytest.mark.asyncio
-@patch("custom_components.blanco_unit.client.validate_pin")
+@patch("custom_components.blanco_unit_ha.client.validate_pin")
 async def test_bluetooth_client_perform_pairing_no_device_id(mock_validate_pin):
     """Test _perform_pairing when no device ID is returned."""
     device = BLEDevice(address="AA:BB:CC:DD:EE:FF", name="Test Device", details={})
@@ -1031,7 +1031,7 @@ async def test_bluetooth_client_perform_pairing_no_device_id(mock_validate_pin):
 
 
 @pytest.mark.asyncio
-@patch("custom_components.blanco_unit.client.establish_connection")
+@patch("custom_components.blanco_unit_ha.client.establish_connection")
 async def test_bluetooth_client_execute_transaction_success(mock_establish):
     """Test _execute_transaction with successful response."""
     device = BLEDevice(address="AA:BB:CC:DD:EE:FF", name="Test Device", details={})
@@ -1085,7 +1085,7 @@ async def test_bluetooth_client_execute_transaction_success(mock_establish):
 
 
 @pytest.mark.asyncio
-@patch("custom_components.blanco_unit.client.establish_connection")
+@patch("custom_components.blanco_unit_ha.client.establish_connection")
 async def test_bluetooth_client_execute_transaction_auth_error(mock_establish):
     """Test _execute_transaction with authentication error."""
     device = BLEDevice(address="AA:BB:CC:DD:EE:FF", name="Test Device", details={})
@@ -1138,7 +1138,7 @@ async def test_bluetooth_client_execute_transaction_auth_error(mock_establish):
 
 
 @pytest.mark.asyncio
-@patch("custom_components.blanco_unit.client.establish_connection")
+@patch("custom_components.blanco_unit_ha.client.establish_connection")
 async def test_bluetooth_client_get_system_info(mock_establish):
     """Test get_system_info method."""
     device = BLEDevice(address="AA:BB:CC:DD:EE:FF", name="Test Device", details={})
@@ -1204,7 +1204,7 @@ async def test_bluetooth_client_get_system_info(mock_establish):
 
 
 @pytest.mark.asyncio
-@patch("custom_components.blanco_unit.client.establish_connection")
+@patch("custom_components.blanco_unit_ha.client.establish_connection")
 async def test_bluetooth_client_get_settings(mock_establish):
     """Test get_settings method."""
     device = BLEDevice(address="AA:BB:CC:DD:EE:FF", name="Test Device", details={})
@@ -1272,7 +1272,7 @@ async def test_bluetooth_client_get_settings(mock_establish):
 
 
 @pytest.mark.asyncio
-@patch("custom_components.blanco_unit.client.establish_connection")
+@patch("custom_components.blanco_unit_ha.client.establish_connection")
 async def test_bluetooth_client_get_status(mock_establish):
     """Test get_status method."""
     device = BLEDevice(address="AA:BB:CC:DD:EE:FF", name="Test Device", details={})
@@ -1341,7 +1341,7 @@ async def test_bluetooth_client_get_status(mock_establish):
 
 
 @pytest.mark.asyncio
-@patch("custom_components.blanco_unit.client.establish_connection")
+@patch("custom_components.blanco_unit_ha.client.establish_connection")
 async def test_bluetooth_client_get_device_identity(mock_establish):
     """Test get_device_identity method."""
     device = BLEDevice(address="AA:BB:CC:DD:EE:FF", name="Test Device", details={})
@@ -1392,7 +1392,7 @@ async def test_bluetooth_client_get_device_identity(mock_establish):
 
 
 @pytest.mark.asyncio
-@patch("custom_components.blanco_unit.client.establish_connection")
+@patch("custom_components.blanco_unit_ha.client.establish_connection")
 async def test_bluetooth_client_get_wifi_info(mock_establish):
     """Test get_wifi_info method."""
     device = BLEDevice(address="AA:BB:CC:DD:EE:FF", name="Test Device", details={})
@@ -1461,7 +1461,7 @@ async def test_bluetooth_client_get_wifi_info(mock_establish):
 
 
 @pytest.mark.asyncio
-@patch("custom_components.blanco_unit.client.establish_connection")
+@patch("custom_components.blanco_unit_ha.client.establish_connection")
 async def test_bluetooth_client_set_temperature_success(mock_establish):
     """Test set_temperature method with valid temperature."""
     device = BLEDevice(address="AA:BB:CC:DD:EE:FF", name="Test Device", details={})
@@ -1537,7 +1537,7 @@ async def test_bluetooth_client_set_temperature_invalid_high():
 
 
 @pytest.mark.asyncio
-@patch("custom_components.blanco_unit.client.establish_connection")
+@patch("custom_components.blanco_unit_ha.client.establish_connection")
 async def test_bluetooth_client_set_water_hardness_success(mock_establish):
     """Test set_water_hardness method."""
     device = BLEDevice(address="AA:BB:CC:DD:EE:FF", name="Test Device", details={})
@@ -1585,7 +1585,7 @@ async def test_bluetooth_client_set_water_hardness_success(mock_establish):
 
 
 @pytest.mark.asyncio
-@patch("custom_components.blanco_unit.client.establish_connection")
+@patch("custom_components.blanco_unit_ha.client.establish_connection")
 async def test_bluetooth_client_change_pin_success(mock_establish):
     """Test change_pin method with successful PIN change."""
     device = BLEDevice(address="AA:BB:CC:DD:EE:FF", name="Test Device", details={})
@@ -1634,7 +1634,7 @@ async def test_bluetooth_client_change_pin_success(mock_establish):
 
 
 @pytest.mark.asyncio
-@patch("custom_components.blanco_unit.client.establish_connection")
+@patch("custom_components.blanco_unit_ha.client.establish_connection")
 async def test_bluetooth_client_change_pin_failure(mock_establish):
     """Test change_pin method when PIN change fails."""
     device = BLEDevice(address="AA:BB:CC:DD:EE:FF", name="Test Device", details={})
@@ -1683,7 +1683,7 @@ async def test_bluetooth_client_change_pin_failure(mock_establish):
 
 
 @pytest.mark.asyncio
-@patch("custom_components.blanco_unit.client.establish_connection")
+@patch("custom_components.blanco_unit_ha.client.establish_connection")
 async def test_bluetooth_client_dispense_water_success(mock_establish):
     """Test dispense_water method with valid parameters."""
     device = BLEDevice(address="AA:BB:CC:DD:EE:FF", name="Test Device", details={})
@@ -1759,7 +1759,7 @@ async def test_bluetooth_client_dispense_water_invalid_intensity():
 
 
 @pytest.mark.asyncio
-@patch("custom_components.blanco_unit.client.establish_connection")
+@patch("custom_components.blanco_unit_ha.client.establish_connection")
 async def test_bluetooth_client_set_calibration_still(mock_establish):
     """Test set_calibration_still method."""
     device = BLEDevice(address="AA:BB:CC:DD:EE:FF", name="Test Device", details={})
@@ -1807,7 +1807,7 @@ async def test_bluetooth_client_set_calibration_still(mock_establish):
 
 
 @pytest.mark.asyncio
-@patch("custom_components.blanco_unit.client.establish_connection")
+@patch("custom_components.blanco_unit_ha.client.establish_connection")
 async def test_bluetooth_client_set_calibration_soda(mock_establish):
     """Test set_calibration_soda method."""
     device = BLEDevice(address="AA:BB:CC:DD:EE:FF", name="Test Device", details={})
@@ -1917,7 +1917,7 @@ def test_allow_cloud_services_pars_to_pars_with_id():
 
 
 @pytest.mark.asyncio
-@patch("custom_components.blanco_unit.client.establish_connection")
+@patch("custom_components.blanco_unit_ha.client.establish_connection")
 async def test_bluetooth_client_scan_wifi_networks(mock_establish):
     """Test scan_wifi_networks method returns list of networks."""
     device = BLEDevice(address="AA:BB:CC:DD:EE:FF", name="Test Device", details={})
@@ -1978,7 +1978,7 @@ async def test_bluetooth_client_scan_wifi_networks(mock_establish):
 
 
 @pytest.mark.asyncio
-@patch("custom_components.blanco_unit.client.establish_connection")
+@patch("custom_components.blanco_unit_ha.client.establish_connection")
 async def test_bluetooth_client_scan_wifi_networks_empty(mock_establish):
     """Test scan_wifi_networks method with empty access point list."""
     device = BLEDevice(address="AA:BB:CC:DD:EE:FF", name="Test Device", details={})
@@ -2027,7 +2027,7 @@ async def test_bluetooth_client_scan_wifi_networks_empty(mock_establish):
 
 
 @pytest.mark.asyncio
-@patch("custom_components.blanco_unit.client.establish_connection")
+@patch("custom_components.blanco_unit_ha.client.establish_connection")
 async def test_bluetooth_client_connect_wifi_success(mock_establish):
     """Test connect_wifi method with successful connection."""
     device = BLEDevice(address="AA:BB:CC:DD:EE:FF", name="Test Device", details={})
@@ -2075,7 +2075,7 @@ async def test_bluetooth_client_connect_wifi_success(mock_establish):
 
 
 @pytest.mark.asyncio
-@patch("custom_components.blanco_unit.client.establish_connection")
+@patch("custom_components.blanco_unit_ha.client.establish_connection")
 async def test_bluetooth_client_disconnect_wifi_success(mock_establish):
     """Test disconnect_wifi method with successful disconnection."""
     device = BLEDevice(address="AA:BB:CC:DD:EE:FF", name="Test Device", details={})
@@ -2123,7 +2123,7 @@ async def test_bluetooth_client_disconnect_wifi_success(mock_establish):
 
 
 @pytest.mark.asyncio
-@patch("custom_components.blanco_unit.client.establish_connection")
+@patch("custom_components.blanco_unit_ha.client.establish_connection")
 async def test_bluetooth_client_allow_cloud_services_success(mock_establish):
     """Test allow_cloud_services method with default rca_id."""
     device = BLEDevice(address="AA:BB:CC:DD:EE:FF", name="Test Device", details={})
@@ -2171,7 +2171,7 @@ async def test_bluetooth_client_allow_cloud_services_success(mock_establish):
 
 
 @pytest.mark.asyncio
-@patch("custom_components.blanco_unit.client.establish_connection")
+@patch("custom_components.blanco_unit_ha.client.establish_connection")
 async def test_bluetooth_client_allow_cloud_services_with_rca_id(mock_establish):
     """Test allow_cloud_services method with specific rca_id."""
     device = BLEDevice(address="AA:BB:CC:DD:EE:FF", name="Test Device", details={})
@@ -2219,7 +2219,7 @@ async def test_bluetooth_client_allow_cloud_services_with_rca_id(mock_establish)
 
 
 @pytest.mark.asyncio
-@patch("custom_components.blanco_unit.client.establish_connection")
+@patch("custom_components.blanco_unit_ha.client.establish_connection")
 async def test_bluetooth_client_factory_reset_success(mock_establish):
     """Test factory_reset method with successful reset."""
     device = BLEDevice(address="AA:BB:CC:DD:EE:FF", name="Test Device", details={})
@@ -2280,7 +2280,7 @@ def _client_for_tests(callback: MagicMock | None = None) -> BlancoUnitBluetoothC
 
 def test_handle_disconnect_ignores_a_previous_client():
     """A late disconnect callback of an old client keeps the current session."""
-    from custom_components.blanco_unit.client import _BlancoUnitSessionData
+    from custom_components.blanco_unit_ha.client import _BlancoUnitSessionData
 
     callback = MagicMock()
     client = _client_for_tests(callback)
@@ -2298,7 +2298,7 @@ def test_handle_disconnect_ignores_a_previous_client():
 @pytest.mark.asyncio
 async def test_disconnect_clears_the_session_and_reports_it():
     """Disconnecting drops the session at once and reports it."""
-    from custom_components.blanco_unit.client import _BlancoUnitSessionData
+    from custom_components.blanco_unit_ha.client import _BlancoUnitSessionData
 
     callback = MagicMock()
     client = _client_for_tests(callback)
@@ -2317,7 +2317,7 @@ async def test_disconnect_clears_the_session_and_reports_it():
 @pytest.mark.asyncio
 async def test_failed_request_disconnects_so_the_next_call_reconnects():
     """A failed request closes the link so the next call reconnects."""
-    from custom_components.blanco_unit.client import _BlancoUnitSessionData
+    from custom_components.blanco_unit_ha.client import _BlancoUnitSessionData
 
     client = _client_for_tests()
     ble_client = AsyncMock()
@@ -2340,7 +2340,7 @@ async def test_gatt_timeout_on_bluez_removes_the_device():
     """BlueZ keeps a stuck GATT operation until the device is removed."""
     from bleak.backends import BleakBackend
 
-    from custom_components.blanco_unit.client import (
+    from custom_components.blanco_unit_ha.client import (
         BlancoUnitGattTimeoutError,
         _BlancoUnitSessionData,
     )
@@ -2363,7 +2363,7 @@ async def test_gatt_timeout_on_bluez_removes_the_device():
 @pytest.mark.asyncio
 async def test_read_that_never_completes_raises_gatt_timeout():
     """A read BlueZ never completes ends in a GATT timeout."""
-    from custom_components.blanco_unit.client import BlancoUnitGattTimeoutError
+    from custom_components.blanco_unit_ha.client import BlancoUnitGattTimeoutError
 
     async def never(*_args):
         await asyncio.Event().wait()
@@ -2372,7 +2372,7 @@ async def test_read_that_never_completes_raises_gatt_timeout():
     ble_client.read_gatt_char = never
 
     with (
-        patch("custom_components.blanco_unit.client.GATT_TIMEOUT", 0.01),
+        patch("custom_components.blanco_unit_ha.client.GATT_TIMEOUT", 0.01),
         pytest.raises(BlancoUnitGattTimeoutError),
     ):
         await _BlancoUnitProtocol(mtu=200).read_response_chunks(ble_client)
@@ -2381,7 +2381,7 @@ async def test_read_that_never_completes_raises_gatt_timeout():
 @pytest.mark.asyncio
 async def test_write_that_never_completes_raises_gatt_timeout():
     """A write BlueZ never completes ends in a GATT timeout."""
-    from custom_components.blanco_unit.client import BlancoUnitGattTimeoutError
+    from custom_components.blanco_unit_ha.client import BlancoUnitGattTimeoutError
 
     async def never(*_args, **_kwargs):
         await asyncio.Event().wait()
@@ -2390,7 +2390,7 @@ async def test_write_that_never_completes_raises_gatt_timeout():
     ble_client.write_gatt_char = never
 
     with (
-        patch("custom_components.blanco_unit.client.GATT_TIMEOUT", 0.01),
+        patch("custom_components.blanco_unit_ha.client.GATT_TIMEOUT", 0.01),
         pytest.raises(BlancoUnitGattTimeoutError),
     ):
         await _BlancoUnitProtocol(mtu=200)._write_packets(ble_client, [b"x"])
@@ -2406,7 +2406,7 @@ async def test_validated_connection_reconnects_once_after_gatt_timeout(
     """Only a BlueZ device loses its bond; a proxy keeps it and just reconnects."""
     from bleak.backends import BleakBackend
 
-    from custom_components.blanco_unit.client import (
+    from custom_components.blanco_unit_ha.client import (
         BlancoUnitGattTimeoutError,
         establish_validated_connection,
     )
@@ -2418,10 +2418,10 @@ async def test_validated_connection_reconnects_once_after_gatt_timeout(
 
     with (
         patch(
-            "custom_components.blanco_unit.client.establish_connection",
+            "custom_components.blanco_unit_ha.client.establish_connection",
             side_effect=[first, second],
         ) as mock_establish,
-        patch("custom_components.blanco_unit.client.REDISCOVERY_DELAY", 0),
+        patch("custom_components.blanco_unit_ha.client.REDISCOVERY_DELAY", 0),
     ):
         client, result = await establish_validated_connection(device, validate)
 
@@ -2435,7 +2435,7 @@ async def test_validated_connection_reconnects_once_after_gatt_timeout(
 @pytest.mark.asyncio
 async def test_validated_connection_gives_up_after_the_second_timeout():
     """A second GATT timeout after reconnecting is raised."""
-    from custom_components.blanco_unit.client import (
+    from custom_components.blanco_unit_ha.client import (
         BlancoUnitGattTimeoutError,
         establish_validated_connection,
     )
@@ -2445,10 +2445,10 @@ async def test_validated_connection_gives_up_after_the_second_timeout():
 
     with (
         patch(
-            "custom_components.blanco_unit.client.establish_connection",
+            "custom_components.blanco_unit_ha.client.establish_connection",
             side_effect=[AsyncMock(), AsyncMock()],
         ),
-        patch("custom_components.blanco_unit.client.REDISCOVERY_DELAY", 0),
+        patch("custom_components.blanco_unit_ha.client.REDISCOVERY_DELAY", 0),
         pytest.raises(BlancoUnitGattTimeoutError),
     ):
         await establish_validated_connection(device, validate)
@@ -2457,14 +2457,14 @@ async def test_validated_connection_gives_up_after_the_second_timeout():
 @pytest.mark.asyncio
 async def test_validated_connection_closes_the_link_when_validation_fails():
     """A failed validation does not leave the device connected."""
-    from custom_components.blanco_unit.client import establish_validated_connection
+    from custom_components.blanco_unit_ha.client import establish_validated_connection
 
     ble_client = AsyncMock()
     device = BLEDevice(address="AA:BB:CC:DD:EE:FF", name="Test Device", details={})
 
     with (
         patch(
-            "custom_components.blanco_unit.client.establish_connection",
+            "custom_components.blanco_unit_ha.client.establish_connection",
             return_value=ble_client,
         ),
         pytest.raises(BlancoUnitAuthenticationError),
@@ -2478,7 +2478,7 @@ async def test_validated_connection_closes_the_link_when_validation_fails():
 
 def test_secret_parameters_are_redacted_in_logs():
     """Passwords and PINs in request parameters never reach the log."""
-    from custom_components.blanco_unit.client import _loggable_envelope
+    from custom_components.blanco_unit_ha.client import _loggable_envelope
 
     envelope = _RequestEnvelope(
         session=1,
@@ -2502,7 +2502,7 @@ def test_secret_parameters_are_redacted_in_logs():
 
 def test_token_and_salt_are_redacted_in_logs():
     """Token and salt together reveal the five-digit PIN by brute force."""
-    from custom_components.blanco_unit.client import _loggable_envelope
+    from custom_components.blanco_unit_ha.client import _loggable_envelope
 
     envelope = _RequestEnvelope(
         session=1,

@@ -1,10 +1,14 @@
-# Blanco Unit Integration for Home Assistant
+# Blanco Unit (BLE) Integration for Home Assistant
 
-[![Open Blanco Unit in HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=alexhaller&repository=blanco_unit&category=integration)
+[![Open Blanco Unit (BLE) in HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=alexhaller&repository=blanco_unit&category=integration)
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://hacs.xyz)
 [![Version](https://img.shields.io/github/v/release/alexhaller/blanco_unit)](https://github.com/alexhaller/blanco_unit/releases/latest)
 
 A Home Assistant custom integration for Blanco water dispensers with Bluetooth Low Energy (BLE) connectivity. Control and monitor your Blanco Unit water dispenser directly from Home Assistant.
+
+This is a fork of [Nailik/blanco_unit](https://github.com/Nailik/blanco_unit) with
+its own integration domain, `blanco_unit_ha`, so both can be installed side by side
+without overwriting each other. Install only one of them for a given device.
 
 ## Overview
 
@@ -34,11 +38,30 @@ This integration allows you to:
 ### HACS Installation (Recommended)
 
 1. Open the Marketplace (HACS) in Home Assistant
-2. Search for "Blanco Unit" and click "Download"
+2. Search for "Blanco Unit (BLE)" and click "Download"
 3. Restart Home Assistant
 
 If it does not show up in the search, add `https://github.com/alexhaller/blanco_unit`
 as a custom repository of the category "Integration" first.
+
+### Upgrading from v2 or older
+
+v3 moved the integration from the domain `blanco_unit` to `blanco_unit_ha`. The
+Marketplace does not move an install to a new domain by itself, so the old files
+have to be removed once:
+
+1. Back up Home Assistant.
+2. Delete the folder `custom_components/blanco_unit`, for example in the Terminal
+   app with `rm -r /config/custom_components/blanco_unit` or with the File editor
+   app. Do not delete the entry under *Settings → Devices & services* — that entry
+   is what gets migrated.
+3. Restart Home Assistant.
+4. Install **Blanco Unit (BLE)** from the Marketplace and restart again.
+
+On that start the old entry is moved to the new domain: the device, its entities,
+their entity IDs and history stay. Service calls change their prefix from
+`blanco_unit.` to `blanco_unit_ha.`, so update scripts and automations that call
+them.
 
 ### Manual Installation
 
@@ -173,7 +196,7 @@ Once configured, the integration creates the following entities:
 
 ## Services
 
-### blanco_unit.dispense_water
+### blanco_unit_ha.dispense_water
 
 Dispense water with specified amount and carbonation level.
 
@@ -189,14 +212,14 @@ Dispense water with specified amount and carbonation level.
 **Example:**
 
 ```yaml
-service: blanco_unit.dispense_water
+service: blanco_unit_ha.dispense_water
 data:
   device_id: abc123def456
   amount_ml: 250
   co2_intensity: 2
 ```
 
-### blanco_unit.change_pin
+### blanco_unit_ha.change_pin
 
 Change the device PIN code.
 
@@ -209,14 +232,14 @@ Change the device PIN code.
 **Example:**
 
 ```yaml
-service: blanco_unit.change_pin
+service: blanco_unit_ha.change_pin
 data:
   device_id: abc123def456
   new_pin: "54321"
   update_config: true
 ```
 
-### blanco_unit.scan_protocol_parameters
+### blanco_unit_ha.scan_protocol_parameters
 
 Test protocol parameters by sending custom BLE commands to the device. This is a diagnostic tool for developers and advanced users to discover supported device commands or test protocol behavior. Results are returned in the service response and logged to the debug log.
 
@@ -233,7 +256,7 @@ Test protocol parameters by sending custom BLE commands to the device. This is a
 See [Event Types](BLUETOOTH_PROTOCOL.md#event-types-blanco-drinksoda) in the protocol documentation for complete details.
 
 ```yaml
-service: blanco_unit.scan_protocol_parameters
+service: blanco_unit_ha.scan_protocol_parameters
 data:
   device_id: abc123def456
   data:
@@ -247,7 +270,7 @@ response_variable: result
 **Example - Get Device Status:**
 
 ```yaml
-service: blanco_unit.scan_protocol_parameters
+service: blanco_unit_ha.scan_protocol_parameters
 data:
   device_id: abc123def456
   data:
@@ -270,7 +293,7 @@ response:
   # Device response data
 ```
 
-### blanco_unit.scan_wifi_networks
+### blanco_unit_ha.scan_wifi_networks
 
 Scan for available WiFi networks near the device. Returns a list of discovered access points.
 
@@ -281,7 +304,7 @@ Scan for available WiFi networks near the device. Returns a list of discovered a
 **Example:**
 
 ```yaml
-service: blanco_unit.scan_wifi_networks
+service: blanco_unit_ha.scan_wifi_networks
 data:
   device_id: abc123def456
 response_variable: wifi_networks
@@ -299,7 +322,7 @@ networks:
     auth_mode: 3
 ```
 
-### blanco_unit.connect_wifi
+### blanco_unit_ha.connect_wifi
 
 Connect the device to a WiFi network.
 
@@ -312,14 +335,14 @@ Connect the device to a WiFi network.
 **Example:**
 
 ```yaml
-service: blanco_unit.connect_wifi
+service: blanco_unit_ha.connect_wifi
 data:
   device_id: abc123def456
   ssid: "MyWiFi"
   password: "mypassword"
 ```
 
-### blanco_unit.disconnect_wifi
+### blanco_unit_ha.disconnect_wifi
 
 Disconnect the device from the current WiFi network.
 
@@ -330,12 +353,12 @@ Disconnect the device from the current WiFi network.
 **Example:**
 
 ```yaml
-service: blanco_unit.disconnect_wifi
+service: blanco_unit_ha.disconnect_wifi
 data:
   device_id: abc123def456
 ```
 
-### blanco_unit.allow_cloud_services
+### blanco_unit_ha.allow_cloud_services
 
 Allow cloud services on the device (Freigabe). This permits the manufacturer's cloud services to communicate with the device.
 
@@ -347,13 +370,13 @@ Allow cloud services on the device (Freigabe). This permits the manufacturer's c
 **Example:**
 
 ```yaml
-service: blanco_unit.allow_cloud_services
+service: blanco_unit_ha.allow_cloud_services
 data:
   device_id: abc123def456
   rca_id: ""
 ```
 
-### blanco_unit.factory_reset
+### blanco_unit_ha.factory_reset
 
 Perform a full software reset of the device. **WARNING:** This will reset all device settings to factory defaults.
 
@@ -364,7 +387,7 @@ Perform a full software reset of the device. **WARNING:** This will reset all de
 **Example:**
 
 ```yaml
-service: blanco_unit.factory_reset
+service: blanco_unit_ha.factory_reset
 data:
   device_id: abc123def456
 ```
@@ -416,7 +439,7 @@ automation:
         entity_id: binary_sensor.blanco_unit_ble_connection
         state: "on"
     action:
-      - service: blanco_unit.dispense_water
+      - service: blanco_unit_ha.dispense_water
         data:
           device_id: abc123def456
           amount_ml: 500

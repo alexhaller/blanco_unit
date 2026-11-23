@@ -8,14 +8,14 @@ Home Assistant custom integration for Blanco water dispensers communicating over
 - Project forked from: https://github.com/Nailik/blanco_unit
 
 Key files:
-- `custom_components/blanco_unit/client.py` — `BlancoUnitBluetoothClient`; BLE request/response flow polls the characteristic with reads (it does not support notify)
-- `custom_components/blanco_unit/coordinator.py` — `BlancoUnitCoordinator`; poll interval: 1 minute
-- `custom_components/blanco_unit/config_flow.py` — required user inputs: MAC address, device name, PIN
-- `custom_components/blanco_unit/const.py` — `DOMAIN = "blanco_unit"`
+- `custom_components/blanco_unit_ha/client.py` — `BlancoUnitBluetoothClient`; BLE request/response flow polls the characteristic with reads (it does not support notify)
+- `custom_components/blanco_unit_ha/coordinator.py` — `BlancoUnitCoordinator`; poll interval: 1 minute
+- `custom_components/blanco_unit_ha/config_flow.py` — required user inputs: MAC address, device name, PIN
+- `custom_components/blanco_unit_ha/const.py` — `DOMAIN = "blanco_unit_ha"`
 - Platforms: `sensor.py`, `binary_sensor.py`, `number.py`, `select.py`, `button.py`
 
 ## Project-specific notes
 
-- **Domain**: `blanco_unit`; `requirements: []` — `bleak` and `bleak-retry-connector` are pinned by HA core and provided by the `bluetooth` dependency, so they are deliberately not listed
+- **Domain**: `blanco_unit_ha` since v3 (`LEGACY_DOMAIN = "blanco_unit"` up to v2). It differs from `Nailik/blanco_unit`, which is in the HACS default catalog, so both can be installed; `async_setup` imports entries left under the old domain and `_async_adopt_legacy_entry` moves their devices and entities (entities first, then the device). Keep the migration until no user can still be on v2; `requirements: []` — `bleak` and `bleak-retry-connector` are pinned by HA core and provided by the `bluetooth` dependency, so they are deliberately not listed
 - **Random MAC support**: devices with randomized MAC are tracked by service UUID instead of address — `RANDOM_MAC_PLACEHOLDER` sentinel in config entry data signals this path
-- **`.releaserc.json`** `prepareCmd` path: `custom_components/blanco_unit/manifest.json`
+- **`.releaserc.json`** `prepareCmd` path: `custom_components/blanco_unit_ha/manifest.json`

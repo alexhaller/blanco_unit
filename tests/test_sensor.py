@@ -11,8 +11,8 @@ from homeassistant.helpers import entity_registry as er
 from pytest_homeassistant.common import MockConfigEntry, snapshot_platform
 from syrupy.assertion import SnapshotAssertion
 
-from custom_components.blanco_unit.const import CONF_MAC, CONF_NAME, CONF_PIN, DOMAIN
-from custom_components.blanco_unit.data import (
+from custom_components.blanco_unit_ha.const import CONF_MAC, CONF_NAME, CONF_PIN, DOMAIN
+from custom_components.blanco_unit_ha.data import (
     BlancoUnitData,
     BlancoUnitIdentity,
     BlancoUnitSettings,
@@ -20,7 +20,7 @@ from custom_components.blanco_unit.data import (
     BlancoUnitSystemInfo,
     BlancoUnitWifiInfo,
 )
-from custom_components.blanco_unit.sensor import (
+from custom_components.blanco_unit_ha.sensor import (
     BLEMacSensor,
     CleanModeStateSensor,
     CO2RemainingSensor,
@@ -130,9 +130,9 @@ async def test_all_entities(
     )
 
     with (
-        patch("custom_components.blanco_unit.PLATFORMS", [Platform.SENSOR]),
+        patch("custom_components.blanco_unit_ha.PLATFORMS", [Platform.SENSOR]),
         patch(
-            "custom_components.blanco_unit.bluetooth.async_ble_device_from_address",
+            "custom_components.blanco_unit_ha.bluetooth.async_ble_device_from_address",
             return_value=mock_bluetooth_device,
         ),
     ):

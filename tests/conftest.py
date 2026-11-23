@@ -33,7 +33,7 @@ async def setup_integration(hass: HomeAssistant, config_entry: MockConfigEntry) 
 @pytest.fixture(name="mock_blanco_unit_data")
 def mock_blanco_unit_data_fixture():
     """Return mock Blanco Unit data."""
-    from custom_components.blanco_unit.data import (
+    from custom_components.blanco_unit_ha.data import (
         BlancoUnitData,
         BlancoUnitIdentity,
         BlancoUnitSettings,
@@ -92,7 +92,7 @@ def mock_blanco_unit_data_fixture():
 @pytest.fixture(name="mock_coordinator")
 def mock_coordinator_fixture(mock_blanco_unit_data):
     """Return a mock coordinator."""
-    from custom_components.blanco_unit.coordinator import BlancoUnitCoordinator
+    from custom_components.blanco_unit_ha.coordinator import BlancoUnitCoordinator
 
     coordinator = MagicMock(spec=BlancoUnitCoordinator)
     coordinator.data = mock_blanco_unit_data
@@ -108,7 +108,7 @@ def mock_close_stale_connections():
     from unittest.mock import AsyncMock, patch
 
     with patch(
-        "custom_components.blanco_unit.client.close_stale_connections_by_address",
+        "custom_components.blanco_unit_ha.client.close_stale_connections_by_address",
         AsyncMock(),
     ) as mock:
         yield mock
@@ -142,10 +142,10 @@ def mock_coord_for_snapshots(mock_blanco_unit_data):
     """Mock the coordinator for snapshot tests."""
     from unittest.mock import AsyncMock, patch
 
-    from custom_components.blanco_unit.coordinator import BlancoUnitCoordinator
+    from custom_components.blanco_unit_ha.coordinator import BlancoUnitCoordinator
 
     with patch(
-        "custom_components.blanco_unit.BlancoUnitCoordinator"
+        "custom_components.blanco_unit_ha.BlancoUnitCoordinator"
     ) as mock_coord_class:
         instance = MagicMock(spec=BlancoUnitCoordinator)
         instance.address = "AA:BB:CC:DD:EE:FF"

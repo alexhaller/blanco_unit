@@ -7,8 +7,8 @@ from unittest.mock import MagicMock, patch
 import pytest
 from homeassistant.core import HomeAssistant
 
-from custom_components.blanco_unit.base import BlancoUnitBaseEntity
-from custom_components.blanco_unit.data import BlancoUnitData
+from custom_components.blanco_unit_ha.base import BlancoUnitBaseEntity
+from custom_components.blanco_unit_ha.data import BlancoUnitData
 
 
 @pytest.fixture
@@ -40,7 +40,7 @@ async def test_base_entity_device_info(mock_coordinator) -> None:
     assert device_info["name"] == "Test Blanco Unit"
     assert device_info["manufacturer"] == "Blanco"
     assert device_info["model"] == "Unit"
-    assert ("blanco_unit", "AA:BB:CC:DD:EE:FF") in device_info["identifiers"]
+    assert ("blanco_unit_ha", "AA:BB:CC:DD:EE:FF") in device_info["identifiers"]
 
 
 async def test_base_entity_available(mock_coordinator) -> None:
@@ -141,7 +141,7 @@ async def test_base_entity_device_info_identifiers(mock_coordinator) -> None:
 
     # Extract the tuple
     identifier = next(iter(identifiers))
-    assert identifier[0] == "blanco_unit"
+    assert identifier[0] == "blanco_unit_ha"
     assert identifier[1] == "AA:BB:CC:DD:EE:FF"
 
 

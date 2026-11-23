@@ -1,6 +1,6 @@
 {
-  "domain": "blanco_unit",
-  "name": "Blanco Unit",
+  "domain": "blanco_unit_ha",
+  "name": "Blanco Unit (BLE)",
   "bluetooth": [
     {
       "service_uuid": "847bba10-a31f-41bf-a35f-3f73a22bb307"

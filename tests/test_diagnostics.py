@@ -6,8 +6,8 @@ from unittest.mock import MagicMock
 
 from homeassistant.core import HomeAssistant
 
-from custom_components.blanco_unit.const import CONF_MAC, CONF_PIN
-from custom_components.blanco_unit.data import (
+from custom_components.blanco_unit_ha.const import CONF_MAC, CONF_PIN
+from custom_components.blanco_unit_ha.data import (
     BlancoUnitData,
     BlancoUnitIdentity,
     BlancoUnitSettings,
@@ -15,7 +15,9 @@ from custom_components.blanco_unit.data import (
     BlancoUnitSystemInfo,
     BlancoUnitWifiInfo,
 )
-from custom_components.blanco_unit.diagnostics import async_get_config_entry_diagnostics
+from custom_components.blanco_unit_ha.diagnostics import (
+    async_get_config_entry_diagnostics,
+)
 
 
 async def test_async_get_config_entry_diagnostics(hass: HomeAssistant) -> None:
