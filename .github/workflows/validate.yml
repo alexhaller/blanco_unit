@@ -43,7 +43,7 @@ jobs:
       # which silently turns a green build red. Bump them deliberately.
       - name: Install dependencies
         run: |
-          pip install ruff==0.17.5 mypy==2.4.1 pip-audit
+          pip install ruff==0.17.6 mypy==2.4.1 pip-audit
           pip install -r requirements.test.txt
       - name: ruff lint
         run: ruff check .
