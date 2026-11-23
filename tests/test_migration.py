@@ -5,7 +5,9 @@ from __future__ import annotations
 from unittest.mock import MagicMock, patch
 
 import pytest
+from homeassistant.config_entries import SOURCE_USER
 from homeassistant.core import HomeAssistant
+from homeassistant.data_entry_flow import FlowResultType
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 from homeassistant.setup import async_setup_component
@@ -112,3 +114,53 @@ async def test_nothing_moves_while_the_old_folder_is_installed(
 
     assert hass.config_entries.async_entries(DOMAIN) == []
     assert "Remove the old custom_components/blanco_unit folder" in caplog.text
+
+
+async def test_adding_the_integration_takes_over_the_old_entry(
+    hass: HomeAssistant,
+) -> None:
+    """Without an entry Home Assistant never loads the integration at startup.
+
+    Adding it is what starts the migration, and needs no input.
+    """
+    legacy = _legacy_install(hass)
+
+    with patch("custom_components.blanco_unit_ha.async_setup_entry", return_value=True):
+        result = await hass.config_entries.flow.async_init(
+            DOMAIN, context={"source": SOURCE_USER}
+        )
+        await hass.async_block_till_done()
+
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert result["title"] == "Kitchen"
+    assert result["data"] == DATA
+    assert result["result"].unique_id == MAC
+    # The old entry goes once the new one has been set up
+    assert hass.config_entries.async_get_entry(legacy.entry_id) is not None
+
+
+async def test_adding_shows_the_form_when_nothing_is_left_to_migrate(
+    hass: HomeAssistant,
+) -> None:
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": SOURCE_USER}
+    )
+
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "user"
+
+
+async def test_adding_waits_while_the_old_folder_is_installed(
+    hass: HomeAssistant,
+) -> None:
+    _legacy_install(hass)
+
+    with patch(
+        "custom_components.blanco_unit_ha.config_flow.async_get_integration",
+        return_value=MagicMock(),
+    ):
+        result = await hass.config_entries.flow.async_init(
+            DOMAIN, context={"source": SOURCE_USER}
+        )
+
+    assert result["type"] is FlowResultType.FORM
