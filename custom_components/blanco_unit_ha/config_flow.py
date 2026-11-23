@@ -294,8 +294,8 @@ class BlancoUnitConfigFlow(ConfigFlow, domain=DOMAIN):
         self, discovery_info: BluetoothServiceInfoBleak
     ) -> ConfigFlowResult:
         """Handle a bluetooth device being discovered."""
-        if (result := await self._async_adopt_legacy()) is not None:
-            return result
+        if (adopted := await self._async_adopt_legacy()) is not None:
+            return adopted
         _LOGGER.debug(
             "async_step_bluetooth called with %s and advertisement %s",
             discovery_info,
@@ -318,8 +318,8 @@ class BlancoUnitConfigFlow(ConfigFlow, domain=DOMAIN):
     ) -> ConfigFlowResult:
         """Create the entry with unique id if not already configured."""
         _LOGGER.debug("async_step_user %s", _loggable(user_input))
-        if user_input is None and (result := await self._async_adopt_legacy()):
-            return result
+        if user_input is None and (adopted := await self._async_adopt_legacy()):
+            return adopted
         result = ValidationResult(errors={})
         if user_input is not None:
             result = await self.validate_input(user_input)
