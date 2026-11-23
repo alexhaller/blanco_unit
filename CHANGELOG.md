@@ -1,3 +1,17 @@
+## [3.0.0](https://github.com/alexhaller/blanco_unit/compare/v2.0.4...v3.0.0) (2026-11-23)
+
+### ⚠ BREAKING CHANGES
+
+* the domain is now blanco_unit_ha. Remove the folder
+custom_components/blanco_unit before installing v3, and change service
+calls from blanco_unit.* to blanco_unit_ha.*.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
+### Features
+
+* move to the domain blanco_unit_ha and migrate old entries ([1970731](https://github.com/alexhaller/blanco_unit/commit/1970731ea3ea76366671fe8c017df2d426014ba5)), closes [hacs/default#13647](https://github.com/hacs/default/issues/13647)
+
 ## [2.0.4](https://github.com/alexhaller/blanco_unit/compare/v2.0.3...v2.0.4) (2026-11-09)
 
 ### Bug Fixes
