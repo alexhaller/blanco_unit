@@ -253,6 +253,17 @@ class BlancoUnitConfigFlow(ConfigFlow, domain=DOMAIN):
             if client is not None and client.is_connected:
                 await client.disconnect()
 
+    async def async_step_import(self, import_data: dict[str, Any]) -> ConfigFlowResult:
+        """Recreate an entry of the old domain without contacting the unit.
+
+        The unit may be out of reach at startup; the entry already proved it works.
+        """
+        await self.async_set_unique_id(import_data["unique_id"])
+        self._abort_if_unique_id_configured()
+        return self.async_create_entry(
+            title=import_data["title"], data=import_data["data"]
+        )
+
     async def async_step_bluetooth(
         self, discovery_info: BluetoothServiceInfoBleak
     ) -> ConfigFlowResult:

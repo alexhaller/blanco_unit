@@ -18,7 +18,7 @@ from homeassistant.exceptions import (
     HomeAssistantError,
 )
 
-from custom_components.blanco_unit import (
+from custom_components.blanco_unit_ha import (
     _find_device_by_scanning,
     _is_random_mac,
     _register_retry_callback,
@@ -27,8 +27,8 @@ from custom_components.blanco_unit import (
     async_setup_entry,
     async_unload_entry,
 )
-from custom_components.blanco_unit.client import PinValidationResult
-from custom_components.blanco_unit.const import (
+from custom_components.blanco_unit_ha.client import PinValidationResult
+from custom_components.blanco_unit_ha.const import (
     BLE_CALLBACK,
     CONF_DEV_ID,
     CONF_MAC,
@@ -45,7 +45,7 @@ async def test_async_setup_success(hass: HomeAssistant) -> None:
 
     with (
         patch(
-            "custom_components.blanco_unit.async_setup_services"
+            "custom_components.blanco_unit_ha.async_setup_services"
         ) as mock_setup_services,
     ):
         result = await async_setup(hass, mock_entry)
@@ -69,11 +69,11 @@ async def test_async_setup_entry_success(hass: HomeAssistant) -> None:
 
     with (
         patch(
-            "custom_components.blanco_unit.bluetooth.async_ble_device_from_address",
+            "custom_components.blanco_unit_ha.bluetooth.async_ble_device_from_address",
             return_value=mock_device,
         ),
         patch(
-            "custom_components.blanco_unit.BlancoUnitCoordinator",
+            "custom_components.blanco_unit_ha.BlancoUnitCoordinator",
             return_value=mock_coordinator,
         ),
         patch.object(hass.config_entries, "async_forward_entry_setups") as mock_forward,
@@ -108,11 +108,11 @@ async def test_async_setup_entry_device_not_found_first_time(
 
     with (
         patch(
-            "custom_components.blanco_unit.bluetooth.async_ble_device_from_address",
+            "custom_components.blanco_unit_ha.bluetooth.async_ble_device_from_address",
             return_value=None,
         ),
         patch(
-            "custom_components.blanco_unit.bluetooth.async_register_callback"
+            "custom_components.blanco_unit_ha.bluetooth.async_register_callback"
         ) as mock_register_callback,
     ):
         with pytest.raises(ConfigEntryNotReady) as exc_info:
@@ -137,11 +137,11 @@ async def test_async_setup_entry_device_not_found_callback_exists(
 
     with (
         patch(
-            "custom_components.blanco_unit.bluetooth.async_ble_device_from_address",
+            "custom_components.blanco_unit_ha.bluetooth.async_ble_device_from_address",
             return_value=None,
         ),
         patch(
-            "custom_components.blanco_unit.bluetooth.async_register_callback"
+            "custom_components.blanco_unit_ha.bluetooth.async_register_callback"
         ) as mock_register_callback,
     ):
         with pytest.raises(ConfigEntryNotReady) as exc_info:
@@ -172,11 +172,11 @@ async def test_async_setup_entry_ble_callback_triggers_reload(
 
     with (
         patch(
-            "custom_components.blanco_unit.bluetooth.async_ble_device_from_address",
+            "custom_components.blanco_unit_ha.bluetooth.async_ble_device_from_address",
             return_value=None,
         ),
         patch(
-            "custom_components.blanco_unit.bluetooth.async_register_callback",
+            "custom_components.blanco_unit_ha.bluetooth.async_register_callback",
             side_effect=capture_callback,
         ),
         patch.object(hass.config_entries, "async_reload") as mock_reload,
@@ -216,11 +216,11 @@ async def test_async_setup_entry_auth_failed(hass: HomeAssistant) -> None:
 
     with (
         patch(
-            "custom_components.blanco_unit.bluetooth.async_ble_device_from_address",
+            "custom_components.blanco_unit_ha.bluetooth.async_ble_device_from_address",
             return_value=mock_device,
         ),
         patch(
-            "custom_components.blanco_unit.BlancoUnitCoordinator",
+            "custom_components.blanco_unit_ha.BlancoUnitCoordinator",
             return_value=mock_coordinator,
         ),
     ):
@@ -251,11 +251,11 @@ async def test_async_setup_entry_home_assistant_error(hass: HomeAssistant) -> No
 
     with (
         patch(
-            "custom_components.blanco_unit.bluetooth.async_ble_device_from_address",
+            "custom_components.blanco_unit_ha.bluetooth.async_ble_device_from_address",
             return_value=mock_device,
         ),
         patch(
-            "custom_components.blanco_unit.BlancoUnitCoordinator",
+            "custom_components.blanco_unit_ha.BlancoUnitCoordinator",
             return_value=mock_coordinator,
         ),
     ):
@@ -286,11 +286,11 @@ async def test_async_setup_entry_generic_exception(hass: HomeAssistant) -> None:
 
     with (
         patch(
-            "custom_components.blanco_unit.bluetooth.async_ble_device_from_address",
+            "custom_components.blanco_unit_ha.bluetooth.async_ble_device_from_address",
             return_value=mock_device,
         ),
         patch(
-            "custom_components.blanco_unit.BlancoUnitCoordinator",
+            "custom_components.blanco_unit_ha.BlancoUnitCoordinator",
             return_value=mock_coordinator,
         ),
     ):
@@ -309,10 +309,10 @@ async def test_async_reload_entry(hass: HomeAssistant) -> None:
 
     with (
         patch(
-            "custom_components.blanco_unit.async_unload_entry", return_value=True
+            "custom_components.blanco_unit_ha.async_unload_entry", return_value=True
         ) as mock_unload,
         patch(
-            "custom_components.blanco_unit.async_setup_entry", return_value=True
+            "custom_components.blanco_unit_ha.async_setup_entry", return_value=True
         ) as mock_setup,
     ):
         await async_reload_entry(hass, mock_entry)
@@ -342,7 +342,7 @@ async def test_async_unload_entry_success(hass: HomeAssistant) -> None:
             return_value=True,
         ) as mock_unload_platforms,
         patch(
-            "custom_components.blanco_unit.bluetooth.async_rediscover_address"
+            "custom_components.blanco_unit_ha.bluetooth.async_rediscover_address"
         ) as mock_rediscover,
     ):
         result = await async_unload_entry(hass, mock_entry)
@@ -374,7 +374,7 @@ async def test_async_unload_entry_no_callback(hass: HomeAssistant) -> None:
             return_value=True,
         ),
         patch(
-            "custom_components.blanco_unit.bluetooth.async_rediscover_address"
+            "custom_components.blanco_unit_ha.bluetooth.async_rediscover_address"
         ) as mock_rediscover,
     ):
         result = await async_unload_entry(hass, mock_entry)
@@ -427,7 +427,7 @@ async def test_async_unload_entry_no_entry_data(hass: HomeAssistant) -> None:
             return_value=True,
         ),
         patch(
-            "custom_components.blanco_unit.bluetooth.async_rediscover_address"
+            "custom_components.blanco_unit_ha.bluetooth.async_rediscover_address"
         ) as mock_rediscover,
     ):
         result = await async_unload_entry(hass, mock_entry)
@@ -511,15 +511,15 @@ async def test_find_device_by_scanning_match_found(hass: HomeAssistant) -> None:
 
     with (
         patch(
-            "custom_components.blanco_unit.bluetooth.async_get_scanner",
+            "custom_components.blanco_unit_ha.bluetooth.async_get_scanner",
             return_value=scanner,
         ),
         patch(
-            "custom_components.blanco_unit.client.establish_connection",
+            "custom_components.blanco_unit_ha.client.establish_connection",
             return_value=mock_client,
         ) as mock_establish_connection,
         patch(
-            "custom_components.blanco_unit.validate_pin",
+            "custom_components.blanco_unit_ha.validate_pin",
             return_value=PinValidationResult(
                 is_valid=True, dev_id="expected_dev_id", dev_type=1
             ),
@@ -540,7 +540,7 @@ async def test_find_device_by_scanning_no_candidates(hass: HomeAssistant) -> Non
     scanner = _make_scanner({})
 
     with patch(
-        "custom_components.blanco_unit.bluetooth.async_get_scanner",
+        "custom_components.blanco_unit_ha.bluetooth.async_get_scanner",
         return_value=scanner,
     ):
         with pytest.raises(ConfigEntryNotReady) as exc_info:
@@ -573,15 +573,15 @@ async def test_find_device_by_scanning_filters_by_uuid(hass: HomeAssistant) -> N
 
     with (
         patch(
-            "custom_components.blanco_unit.bluetooth.async_get_scanner",
+            "custom_components.blanco_unit_ha.bluetooth.async_get_scanner",
             return_value=scanner,
         ),
         patch(
-            "custom_components.blanco_unit.client.establish_connection",
+            "custom_components.blanco_unit_ha.client.establish_connection",
             return_value=mock_client,
         ),
         patch(
-            "custom_components.blanco_unit.validate_pin",
+            "custom_components.blanco_unit_ha.validate_pin",
             return_value=PinValidationResult(
                 is_valid=True, dev_id="expected_dev_id", dev_type=1
             ),
@@ -604,15 +604,15 @@ async def test_find_device_by_scanning_auth_failure(hass: HomeAssistant) -> None
 
     with (
         patch(
-            "custom_components.blanco_unit.bluetooth.async_get_scanner",
+            "custom_components.blanco_unit_ha.bluetooth.async_get_scanner",
             return_value=scanner,
         ),
         patch(
-            "custom_components.blanco_unit.client.establish_connection",
+            "custom_components.blanco_unit_ha.client.establish_connection",
             return_value=mock_client,
         ),
         patch(
-            "custom_components.blanco_unit.validate_pin",
+            "custom_components.blanco_unit_ha.validate_pin",
             return_value=PinValidationResult(
                 is_valid=False, dev_id=None, dev_type=None
             ),
@@ -636,15 +636,15 @@ async def test_find_device_by_scanning_dev_id_mismatch(hass: HomeAssistant) -> N
 
     with (
         patch(
-            "custom_components.blanco_unit.bluetooth.async_get_scanner",
+            "custom_components.blanco_unit_ha.bluetooth.async_get_scanner",
             return_value=scanner,
         ),
         patch(
-            "custom_components.blanco_unit.client.establish_connection",
+            "custom_components.blanco_unit_ha.client.establish_connection",
             return_value=mock_client,
         ),
         patch(
-            "custom_components.blanco_unit.validate_pin",
+            "custom_components.blanco_unit_ha.validate_pin",
             return_value=PinValidationResult(
                 is_valid=True, dev_id="wrong_dev_id", dev_type=1
             ),
@@ -686,15 +686,15 @@ async def test_find_device_by_scanning_connection_failure_skipped(
 
     with (
         patch(
-            "custom_components.blanco_unit.bluetooth.async_get_scanner",
+            "custom_components.blanco_unit_ha.bluetooth.async_get_scanner",
             return_value=scanner,
         ),
         patch(
-            "custom_components.blanco_unit.client.establish_connection",
+            "custom_components.blanco_unit_ha.client.establish_connection",
             side_effect=mock_establish,
         ),
         patch(
-            "custom_components.blanco_unit.validate_pin",
+            "custom_components.blanco_unit_ha.validate_pin",
             return_value=PinValidationResult(
                 is_valid=True, dev_id="expected_dev_id", dev_type=1
             ),
@@ -733,15 +733,15 @@ async def test_find_device_by_scanning_sorts_by_rssi(hass: HomeAssistant) -> Non
 
     with (
         patch(
-            "custom_components.blanco_unit.bluetooth.async_get_scanner",
+            "custom_components.blanco_unit_ha.bluetooth.async_get_scanner",
             return_value=scanner,
         ),
         patch(
-            "custom_components.blanco_unit.client.establish_connection",
+            "custom_components.blanco_unit_ha.client.establish_connection",
             side_effect=mock_establish,
         ),
         patch(
-            "custom_components.blanco_unit.validate_pin",
+            "custom_components.blanco_unit_ha.validate_pin",
             return_value=PinValidationResult(
                 is_valid=True, dev_id="expected_dev_id", dev_type=1
             ),
@@ -761,7 +761,7 @@ async def test_register_retry_callback_random_mac(hass: HomeAssistant) -> None:
     hass.data[DOMAIN][entry.entry_id] = {}
 
     with patch(
-        "custom_components.blanco_unit.bluetooth.async_register_callback"
+        "custom_components.blanco_unit_ha.bluetooth.async_register_callback"
     ) as mock_register:
         mock_register.return_value = MagicMock()
         _register_retry_callback(hass, entry)
@@ -784,7 +784,7 @@ async def test_register_retry_callback_static_mac(hass: HomeAssistant) -> None:
     hass.data[DOMAIN][entry.entry_id] = {}
 
     with patch(
-        "custom_components.blanco_unit.bluetooth.async_register_callback"
+        "custom_components.blanco_unit_ha.bluetooth.async_register_callback"
     ) as mock_register:
         mock_register.return_value = MagicMock()
         _register_retry_callback(hass, entry)
@@ -806,7 +806,7 @@ async def test_register_retry_callback_skips_if_already_registered(
     hass.data[DOMAIN][entry.entry_id] = {BLE_CALLBACK: MagicMock()}
 
     with patch(
-        "custom_components.blanco_unit.bluetooth.async_register_callback"
+        "custom_components.blanco_unit_ha.bluetooth.async_register_callback"
     ) as mock_register:
         _register_retry_callback(hass, entry)
         mock_register.assert_not_called()
@@ -826,11 +826,11 @@ async def test_async_setup_entry_random_mac_success(hass: HomeAssistant) -> None
 
     with (
         patch(
-            "custom_components.blanco_unit._find_device_by_scanning",
+            "custom_components.blanco_unit_ha._find_device_by_scanning",
             return_value=mock_device,
         ),
         patch(
-            "custom_components.blanco_unit.BlancoUnitCoordinator",
+            "custom_components.blanco_unit_ha.BlancoUnitCoordinator",
             return_value=mock_coordinator,
         ),
         patch.object(hass.config_entries, "async_forward_entry_setups") as mock_forward,
@@ -851,11 +851,11 @@ async def test_async_setup_entry_random_mac_not_found(hass: HomeAssistant) -> No
 
     with (
         patch(
-            "custom_components.blanco_unit._find_device_by_scanning",
+            "custom_components.blanco_unit_ha._find_device_by_scanning",
             side_effect=ConfigEntryNotReady(translation_key="error_device_not_found"),
         ),
         patch(
-            "custom_components.blanco_unit.bluetooth.async_register_callback",
+            "custom_components.blanco_unit_ha.bluetooth.async_register_callback",
             return_value=MagicMock(),
         ) as mock_register,
     ):
@@ -875,7 +875,7 @@ async def test_async_setup_entry_random_mac_auth_failed(hass: HomeAssistant) -> 
     hass.data[DOMAIN][mock_entry.entry_id] = {}
 
     with patch(
-        "custom_components.blanco_unit._find_device_by_scanning",
+        "custom_components.blanco_unit_ha._find_device_by_scanning",
         side_effect=ConfigEntryAuthFailed(
             translation_key="error_invalid_authentication"
         ),
@@ -906,7 +906,7 @@ async def test_async_unload_entry_random_mac_skips_rediscover(
             return_value=True,
         ),
         patch(
-            "custom_components.blanco_unit.bluetooth.async_rediscover_address"
+            "custom_components.blanco_unit_ha.bluetooth.async_rediscover_address"
         ) as mock_rediscover,
     ):
         result = await async_unload_entry(hass, mock_entry)

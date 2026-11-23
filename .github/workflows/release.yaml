@@ -42,18 +42,18 @@ jobs:
       - name: Build release zip
         if: steps.semantic.outputs.new_release_published == 'true'
         run: |
-          cd custom_components/blanco_unit
-          zip blanco_unit.zip -r ./
+          cd custom_components/blanco_unit_ha
+          zip blanco_unit_ha.zip -r ./
 
       - name: Sign release package
         if: steps.semantic.outputs.new_release_published == 'true'
         uses: sigstore/gh-action-sigstore-python@790bc6befb9d733738f18d8f895854b453640ec9 # v3.5.0
         with:
-          inputs: ${{ github.workspace }}/custom_components/blanco_unit/blanco_unit.zip
+          inputs: ${{ github.workspace }}/custom_components/blanco_unit_ha/blanco_unit_ha.zip
 
       - name: Upload zip to release
         if: steps.semantic.outputs.new_release_published == 'true'
         uses: softprops/action-gh-release@8a0cd651e5b2365bd640854a3fa5dfc70e4875f3 # v3.0.4
         with:
           tag_name: v${{ steps.semantic.outputs.new_release_version }}
-          files: ${{ github.workspace }}/custom_components/blanco_unit/blanco_unit.zip
+          files: ${{ github.workspace }}/custom_components/blanco_unit_ha/blanco_unit_ha.zip

@@ -12,7 +12,7 @@ from homeassistant.components.bluetooth import (
     BluetoothScanningMode,
     BluetoothServiceInfoBleak,
 )
-from homeassistant.config_entries import ConfigEntry
+from homeassistant.config_entries import SOURCE_IMPORT, ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import (
@@ -21,6 +21,10 @@ from homeassistant.exceptions import (
     HomeAssistantError,
 )
 from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers import device_registry as dr
+from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers.typing import ConfigType
+from homeassistant.loader import IntegrationNotFound, async_get_integration
 
 from .client import establish_validated_connection, validate_pin
 from .const import (
@@ -29,6 +33,7 @@ from .const import (
     CONF_MAC,
     CONF_PIN,
     DOMAIN,
+    LEGACY_DOMAIN,
     RANDOM_MAC_PLACEHOLDER,
     SERVICE_UUID,
 )
@@ -50,11 +55,88 @@ type BlancoUnitConfigEntry = ConfigEntry[BlancoUnitCoordinator]
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 
-async def async_setup(hass: HomeAssistant, entry: BlancoUnitConfigEntry) -> bool:
-    """Set up Blanco Unit integration services."""
-    _LOGGER.debug("async_setup called with config_entry: %s", entry)
+async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
+    """Set up the services and import entries left under the old domain."""
     async_setup_services(hass)
+
+    legacy_entries = hass.config_entries.async_entries(LEGACY_DOMAIN)
+    if not legacy_entries:
+        return True
+
+    try:
+        await async_get_integration(hass, LEGACY_DOMAIN)
+    except IntegrationNotFound:
+        pass
+    else:
+        # The old version (or Nailik/blanco_unit) is still installed: it would
+        # drive the same unit, and entities of a loaded integration cannot move.
+        _LOGGER.error(
+            "Remove the old custom_components/%s folder and restart; its "
+            "entries are migrated to %s once it is gone",
+            LEGACY_DOMAIN,
+            DOMAIN,
+        )
+        return True
+
+    for legacy in legacy_entries:
+        if legacy.unique_id is None:
+            continue
+        # Not awaited: the new entry is set up as soon as it is added, and that
+        # setup waits for this component setup to finish.
+        hass.async_create_task(
+            hass.config_entries.flow.async_init(
+                DOMAIN,
+                context={"source": SOURCE_IMPORT},
+                data={
+                    "unique_id": legacy.unique_id,
+                    "title": legacy.title,
+                    "data": dict(legacy.data),
+                },
+            )
+        )
     return True
+
+
+async def _async_adopt_legacy_entry(
+    hass: HomeAssistant, entry: BlancoUnitConfigEntry
+) -> None:
+    """Move the device and entities of the matching old entry to this entry.
+
+    Runs before the platforms are set up, so the entities are found under their
+    old entity IDs and keep their history, dashboards and automations.
+    """
+    legacy = next(
+        (
+            candidate
+            for candidate in hass.config_entries.async_entries(LEGACY_DOMAIN)
+            if candidate.unique_id == entry.unique_id
+        ),
+        None,
+    )
+    if legacy is None:
+        return
+
+    # Entities first: moving the device off the old entry removes every entity
+    # on it that still belongs to that entry.
+    entity_registry = er.async_get(hass)
+    for entity in er.async_entries_for_config_entry(entity_registry, legacy.entry_id):
+        entity_registry.async_update_entity_platform(
+            entity.entity_id, DOMAIN, new_config_entry_id=entry.entry_id
+        )
+
+    device_registry = dr.async_get(hass)
+    for device in dr.async_entries_for_config_entry(device_registry, legacy.entry_id):
+        device_registry.async_update_device(
+            device.id,
+            new_config_entry_id=entry.entry_id,
+            new_identifiers={
+                (DOMAIN if domain == LEGACY_DOMAIN else domain, identifier)
+                for domain, identifier in device.identifiers
+            },
+        )
+
+    await hass.config_entries.async_remove(legacy.entry_id)
+    _LOGGER.info("Migrated %s from %s to %s", entry.title, LEGACY_DOMAIN, DOMAIN)
 
 
 def _is_random_mac(config_entry: BlancoUnitConfigEntry) -> bool:
@@ -229,6 +311,7 @@ async def async_setup_entry(
     hass: HomeAssistant, config_entry: BlancoUnitConfigEntry
 ) -> bool:
     """Set up Blanco Unit Integration from a config entry."""
+    await _async_adopt_legacy_entry(hass, config_entry)
     _LOGGER.debug("async_setup_entry called with config_entry: %s", config_entry)
 
     hass.data.setdefault(DOMAIN, {})

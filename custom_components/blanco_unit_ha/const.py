@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
-DOMAIN = "blanco_unit"
+DOMAIN = "blanco_unit_ha"
+# Domain up to v2: it collides with Nailik/blanco_unit, the integration this
+# one was forked from. Entries left under it are migrated on startup.
+LEGACY_DOMAIN = "blanco_unit"
 
 # Config Entry Keys
 CONF_MAC = "conf_mac"

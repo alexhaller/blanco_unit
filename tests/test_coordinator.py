@@ -13,10 +13,10 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed, ServiceValidationError
 from homeassistant.helpers.update_coordinator import UpdateFailed
 
-from custom_components.blanco_unit.client import BlancoUnitAuthenticationError
-from custom_components.blanco_unit.const import CONF_MAC, CONF_PIN
-from custom_components.blanco_unit.coordinator import BlancoUnitCoordinator
-from custom_components.blanco_unit.data import (
+from custom_components.blanco_unit_ha.client import BlancoUnitAuthenticationError
+from custom_components.blanco_unit_ha.const import CONF_MAC, CONF_PIN
+from custom_components.blanco_unit_ha.coordinator import BlancoUnitCoordinator
+from custom_components.blanco_unit_ha.data import (
     BlancoUnitData,
     BlancoUnitIdentity,
     BlancoUnitSettings,
@@ -130,13 +130,13 @@ async def test_coordinator_init(
 
     with (
         patch(
-            "custom_components.blanco_unit.coordinator.BlancoUnitBluetoothClient"
+            "custom_components.blanco_unit_ha.coordinator.BlancoUnitBluetoothClient"
         ) as mock_client_class,
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_track_unavailable"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_track_unavailable"
         ) as mock_track_unavailable,
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_register_callback"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_register_callback"
         ) as mock_register_callback,
     ):
         mock_client_class.return_value = MagicMock()
@@ -161,13 +161,13 @@ async def test_coordinator_available_callback(
 
     with (
         patch(
-            "custom_components.blanco_unit.coordinator.BlancoUnitBluetoothClient"
+            "custom_components.blanco_unit_ha.coordinator.BlancoUnitBluetoothClient"
         ) as mock_client_class,
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_track_unavailable"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_track_unavailable"
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_register_callback"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_register_callback"
         ),
     ):
         mock_client_class.return_value = MagicMock()
@@ -194,13 +194,13 @@ async def test_coordinator_unavailable_callback(
 
     with (
         patch(
-            "custom_components.blanco_unit.coordinator.BlancoUnitBluetoothClient"
+            "custom_components.blanco_unit_ha.coordinator.BlancoUnitBluetoothClient"
         ) as mock_client_class,
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_track_unavailable"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_track_unavailable"
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_register_callback"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_register_callback"
         ),
     ):
         mock_client = MagicMock()
@@ -223,7 +223,7 @@ async def test_coordinator_unavailable_callback(
         info.address = "AA:BB:CC:DD:EE:FF"
 
         with patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_rediscover_address"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_rediscover_address"
         ) as mock_rediscover:
             coordinator._unavailable_callback(info)
 
@@ -241,15 +241,15 @@ async def test_coordinator_unload(
 
     with (
         patch(
-            "custom_components.blanco_unit.coordinator.BlancoUnitBluetoothClient",
+            "custom_components.blanco_unit_ha.coordinator.BlancoUnitBluetoothClient",
             return_value=mock_client,
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_track_unavailable",
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_track_unavailable",
             return_value=unsub_unavailable,
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_register_callback",
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_register_callback",
             return_value=unsub_available,
         ),
     ):
@@ -272,14 +272,14 @@ async def test_coordinator_refresh_data(
 
     with (
         patch(
-            "custom_components.blanco_unit.coordinator.BlancoUnitBluetoothClient",
+            "custom_components.blanco_unit_ha.coordinator.BlancoUnitBluetoothClient",
             return_value=mock_client,
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_track_unavailable"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_track_unavailable"
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_register_callback"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_register_callback"
         ),
     ):
         coordinator = BlancoUnitCoordinator(
@@ -301,14 +301,14 @@ async def test_coordinator_disconnect(
 
     with (
         patch(
-            "custom_components.blanco_unit.coordinator.BlancoUnitBluetoothClient",
+            "custom_components.blanco_unit_ha.coordinator.BlancoUnitBluetoothClient",
             return_value=mock_client,
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_track_unavailable"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_track_unavailable"
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_register_callback"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_register_callback"
         ),
     ):
         coordinator = BlancoUnitCoordinator(
@@ -340,14 +340,14 @@ async def test_coordinator_set_temperature(
 
     with (
         patch(
-            "custom_components.blanco_unit.coordinator.BlancoUnitBluetoothClient",
+            "custom_components.blanco_unit_ha.coordinator.BlancoUnitBluetoothClient",
             return_value=mock_client,
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_track_unavailable"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_track_unavailable"
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_register_callback"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_register_callback"
         ),
     ):
         coordinator = BlancoUnitCoordinator(
@@ -386,14 +386,14 @@ async def test_coordinator_set_temperature_verification_failed(
 
     with (
         patch(
-            "custom_components.blanco_unit.coordinator.BlancoUnitBluetoothClient",
+            "custom_components.blanco_unit_ha.coordinator.BlancoUnitBluetoothClient",
             return_value=mock_client,
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_track_unavailable"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_track_unavailable"
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_register_callback"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_register_callback"
         ),
     ):
         coordinator = BlancoUnitCoordinator(
@@ -430,14 +430,14 @@ async def test_coordinator_set_water_hardness(
 
     with (
         patch(
-            "custom_components.blanco_unit.coordinator.BlancoUnitBluetoothClient",
+            "custom_components.blanco_unit_ha.coordinator.BlancoUnitBluetoothClient",
             return_value=mock_client,
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_track_unavailable"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_track_unavailable"
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_register_callback"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_register_callback"
         ),
     ):
         coordinator = BlancoUnitCoordinator(
@@ -476,14 +476,14 @@ async def test_coordinator_set_water_hardness_verification_failed(
 
     with (
         patch(
-            "custom_components.blanco_unit.coordinator.BlancoUnitBluetoothClient",
+            "custom_components.blanco_unit_ha.coordinator.BlancoUnitBluetoothClient",
             return_value=mock_client,
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_track_unavailable"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_track_unavailable"
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_register_callback"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_register_callback"
         ),
     ):
         coordinator = BlancoUnitCoordinator(
@@ -508,14 +508,14 @@ async def test_coordinator_dispense_water(
 
     with (
         patch(
-            "custom_components.blanco_unit.coordinator.BlancoUnitBluetoothClient",
+            "custom_components.blanco_unit_ha.coordinator.BlancoUnitBluetoothClient",
             return_value=mock_client,
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_track_unavailable"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_track_unavailable"
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_register_callback"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_register_callback"
         ),
     ):
         coordinator = BlancoUnitCoordinator(
@@ -538,14 +538,14 @@ async def test_coordinator_change_pin(
 
     with (
         patch(
-            "custom_components.blanco_unit.coordinator.BlancoUnitBluetoothClient",
+            "custom_components.blanco_unit_ha.coordinator.BlancoUnitBluetoothClient",
             return_value=mock_client,
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_track_unavailable"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_track_unavailable"
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_register_callback"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_register_callback"
         ),
     ):
         coordinator = BlancoUnitCoordinator(
@@ -566,14 +566,14 @@ async def test_coordinator_set_calibration_still(
 
     with (
         patch(
-            "custom_components.blanco_unit.coordinator.BlancoUnitBluetoothClient",
+            "custom_components.blanco_unit_ha.coordinator.BlancoUnitBluetoothClient",
             return_value=mock_client,
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_track_unavailable"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_track_unavailable"
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_register_callback"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_register_callback"
         ),
     ):
         coordinator = BlancoUnitCoordinator(
@@ -600,14 +600,14 @@ async def test_coordinator_set_calibration_soda(
 
     with (
         patch(
-            "custom_components.blanco_unit.coordinator.BlancoUnitBluetoothClient",
+            "custom_components.blanco_unit_ha.coordinator.BlancoUnitBluetoothClient",
             return_value=mock_client,
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_track_unavailable"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_track_unavailable"
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_register_callback"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_register_callback"
         ),
     ):
         coordinator = BlancoUnitCoordinator(
@@ -634,14 +634,14 @@ async def test_coordinator_connection_changed(
 
     with (
         patch(
-            "custom_components.blanco_unit.coordinator.BlancoUnitBluetoothClient",
+            "custom_components.blanco_unit_ha.coordinator.BlancoUnitBluetoothClient",
             return_value=mock_client,
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_track_unavailable"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_track_unavailable"
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_register_callback"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_register_callback"
         ),
     ):
         coordinator = BlancoUnitCoordinator(
@@ -667,14 +667,14 @@ async def test_coordinator_async_update_data_success(
 
     with (
         patch(
-            "custom_components.blanco_unit.coordinator.BlancoUnitBluetoothClient",
+            "custom_components.blanco_unit_ha.coordinator.BlancoUnitBluetoothClient",
             return_value=mock_client,
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_track_unavailable"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_track_unavailable"
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_register_callback"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_register_callback"
         ),
     ):
         coordinator = BlancoUnitCoordinator(
@@ -705,17 +705,17 @@ async def test_coordinator_async_update_data_auth_error(
 
     with (
         patch(
-            "custom_components.blanco_unit.coordinator.BlancoUnitBluetoothClient",
+            "custom_components.blanco_unit_ha.coordinator.BlancoUnitBluetoothClient",
             return_value=mock_client,
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_track_unavailable"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_track_unavailable"
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_register_callback"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_register_callback"
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_rediscover_address"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_rediscover_address"
         ),
     ):
         coordinator = BlancoUnitCoordinator(
@@ -736,14 +736,14 @@ async def test_coordinator_async_update_data_connection_error(
 
     with (
         patch(
-            "custom_components.blanco_unit.coordinator.BlancoUnitBluetoothClient",
+            "custom_components.blanco_unit_ha.coordinator.BlancoUnitBluetoothClient",
             return_value=mock_client,
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_track_unavailable"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_track_unavailable"
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_register_callback"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_register_callback"
         ),
     ):
         coordinator = BlancoUnitCoordinator(
@@ -771,17 +771,17 @@ async def test_coordinator_async_update_data_not_found_error(
 
     with (
         patch(
-            "custom_components.blanco_unit.coordinator.BlancoUnitBluetoothClient",
+            "custom_components.blanco_unit_ha.coordinator.BlancoUnitBluetoothClient",
             return_value=mock_client,
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_track_unavailable"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_track_unavailable"
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_register_callback"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_register_callback"
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_rediscover_address"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_rediscover_address"
         ),
     ):
         coordinator = BlancoUnitCoordinator(
@@ -809,17 +809,17 @@ async def test_coordinator_async_update_data_generic_error(
 
     with (
         patch(
-            "custom_components.blanco_unit.coordinator.BlancoUnitBluetoothClient",
+            "custom_components.blanco_unit_ha.coordinator.BlancoUnitBluetoothClient",
             return_value=mock_client,
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_track_unavailable"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_track_unavailable"
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_register_callback"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_register_callback"
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_rediscover_address"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_rediscover_address"
         ),
     ):
         coordinator = BlancoUnitCoordinator(
@@ -845,14 +845,14 @@ async def test_coordinator_call_auth_error(
 
     with (
         patch(
-            "custom_components.blanco_unit.coordinator.BlancoUnitBluetoothClient",
+            "custom_components.blanco_unit_ha.coordinator.BlancoUnitBluetoothClient",
             return_value=mock_client,
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_track_unavailable"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_track_unavailable"
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_register_callback"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_register_callback"
         ),
     ):
         coordinator = BlancoUnitCoordinator(
@@ -874,17 +874,17 @@ async def test_coordinator_call_connection_error(
 
     with (
         patch(
-            "custom_components.blanco_unit.coordinator.BlancoUnitBluetoothClient",
+            "custom_components.blanco_unit_ha.coordinator.BlancoUnitBluetoothClient",
             return_value=mock_client,
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_track_unavailable"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_track_unavailable"
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_register_callback"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_register_callback"
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_rediscover_address"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_rediscover_address"
         ),
     ):
         coordinator = BlancoUnitCoordinator(
@@ -912,17 +912,17 @@ async def test_coordinator_call_not_found_error(
 
     with (
         patch(
-            "custom_components.blanco_unit.coordinator.BlancoUnitBluetoothClient",
+            "custom_components.blanco_unit_ha.coordinator.BlancoUnitBluetoothClient",
             return_value=mock_client,
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_track_unavailable"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_track_unavailable"
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_register_callback"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_register_callback"
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_rediscover_address"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_rediscover_address"
         ),
     ):
         coordinator = BlancoUnitCoordinator(
@@ -950,17 +950,17 @@ async def test_coordinator_call_generic_error(
 
     with (
         patch(
-            "custom_components.blanco_unit.coordinator.BlancoUnitBluetoothClient",
+            "custom_components.blanco_unit_ha.coordinator.BlancoUnitBluetoothClient",
             return_value=mock_client,
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_track_unavailable"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_track_unavailable"
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_register_callback"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_register_callback"
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_rediscover_address"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_rediscover_address"
         ),
     ):
         coordinator = BlancoUnitCoordinator(
@@ -988,17 +988,17 @@ async def test_coordinator_set_unavailable_with_no_data(
 
     with (
         patch(
-            "custom_components.blanco_unit.coordinator.BlancoUnitBluetoothClient",
+            "custom_components.blanco_unit_ha.coordinator.BlancoUnitBluetoothClient",
             return_value=mock_client,
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_track_unavailable"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_track_unavailable"
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_register_callback"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_register_callback"
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_rediscover_address"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_rediscover_address"
         ) as mock_rediscover,
     ):
         coordinator = BlancoUnitCoordinator(
@@ -1021,14 +1021,14 @@ async def test_coordinator_scan_wifi_networks(
 
     with (
         patch(
-            "custom_components.blanco_unit.coordinator.BlancoUnitBluetoothClient",
+            "custom_components.blanco_unit_ha.coordinator.BlancoUnitBluetoothClient",
             return_value=mock_client,
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_track_unavailable"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_track_unavailable"
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_register_callback"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_register_callback"
         ),
     ):
         coordinator = BlancoUnitCoordinator(
@@ -1050,14 +1050,14 @@ async def test_coordinator_connect_wifi(
 
     with (
         patch(
-            "custom_components.blanco_unit.coordinator.BlancoUnitBluetoothClient",
+            "custom_components.blanco_unit_ha.coordinator.BlancoUnitBluetoothClient",
             return_value=mock_client,
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_track_unavailable"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_track_unavailable"
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_register_callback"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_register_callback"
         ),
     ):
         coordinator = BlancoUnitCoordinator(
@@ -1081,14 +1081,14 @@ async def test_coordinator_disconnect_wifi(
 
     with (
         patch(
-            "custom_components.blanco_unit.coordinator.BlancoUnitBluetoothClient",
+            "custom_components.blanco_unit_ha.coordinator.BlancoUnitBluetoothClient",
             return_value=mock_client,
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_track_unavailable"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_track_unavailable"
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_register_callback"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_register_callback"
         ),
     ):
         coordinator = BlancoUnitCoordinator(
@@ -1112,14 +1112,14 @@ async def test_coordinator_allow_cloud_services(
 
     with (
         patch(
-            "custom_components.blanco_unit.coordinator.BlancoUnitBluetoothClient",
+            "custom_components.blanco_unit_ha.coordinator.BlancoUnitBluetoothClient",
             return_value=mock_client,
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_track_unavailable"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_track_unavailable"
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_register_callback"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_register_callback"
         ),
     ):
         coordinator = BlancoUnitCoordinator(
@@ -1139,14 +1139,14 @@ async def test_coordinator_allow_cloud_services_default_rca(
 
     with (
         patch(
-            "custom_components.blanco_unit.coordinator.BlancoUnitBluetoothClient",
+            "custom_components.blanco_unit_ha.coordinator.BlancoUnitBluetoothClient",
             return_value=mock_client,
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_track_unavailable"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_track_unavailable"
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_register_callback"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_register_callback"
         ),
     ):
         coordinator = BlancoUnitCoordinator(
@@ -1166,14 +1166,14 @@ async def test_coordinator_factory_reset(
 
     with (
         patch(
-            "custom_components.blanco_unit.coordinator.BlancoUnitBluetoothClient",
+            "custom_components.blanco_unit_ha.coordinator.BlancoUnitBluetoothClient",
             return_value=mock_client,
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_track_unavailable"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_track_unavailable"
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_register_callback"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_register_callback"
         ),
     ):
         coordinator = BlancoUnitCoordinator(
@@ -1187,16 +1187,19 @@ async def test_random_mac_listens_for_the_advertised_service(
     hass: HomeAssistant, mock_device, mock_config_entry
 ) -> None:
     """The device advertises SERVICE_UUID, never the characteristic UUID."""
-    from custom_components.blanco_unit.const import RANDOM_MAC_PLACEHOLDER, SERVICE_UUID
+    from custom_components.blanco_unit_ha.const import (
+        RANDOM_MAC_PLACEHOLDER,
+        SERVICE_UUID,
+    )
 
     mock_config_entry.data = {CONF_MAC: RANDOM_MAC_PLACEHOLDER, CONF_PIN: "12345"}
     with (
-        patch("custom_components.blanco_unit.coordinator.BlancoUnitBluetoothClient"),
+        patch("custom_components.blanco_unit_ha.coordinator.BlancoUnitBluetoothClient"),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_track_unavailable"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_track_unavailable"
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_register_callback"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_register_callback"
         ) as mock_register_callback,
     ):
         BlancoUnitCoordinator(hass, mock_config_entry, mock_device, MagicMock())
@@ -1213,13 +1216,13 @@ async def test_pin_is_padded_to_five_digits(
     mock_config_entry.data = {CONF_MAC: "AA:BB:CC:DD:EE:FF", CONF_PIN: stored}
     with (
         patch(
-            "custom_components.blanco_unit.coordinator.BlancoUnitBluetoothClient"
+            "custom_components.blanco_unit_ha.coordinator.BlancoUnitBluetoothClient"
         ) as mock_client_class,
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_track_unavailable"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_track_unavailable"
         ),
         patch(
-            "custom_components.blanco_unit.coordinator.bluetooth.async_register_callback"
+            "custom_components.blanco_unit_ha.coordinator.bluetooth.async_register_callback"
         ),
     ):
         BlancoUnitCoordinator(hass, mock_config_entry, mock_device, MagicMock())
