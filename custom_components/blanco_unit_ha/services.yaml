@@ -11,7 +11,7 @@ dispense_water:
       example: "a1b2c3d4e5f6"
       selector:
         device:
-          integration: blanco_unit
+          integration: blanco_unit_ha
     amount_ml:
       name: Amount (ml)
       description: Amount of water to dispense in milliliters.
@@ -48,7 +48,7 @@ change_pin:
       example: "a1b2c3d4e5f6"
       selector:
         device:
-          integration: blanco_unit
+          integration: blanco_unit_ha
     new_pin:
       name: New PIN
       description: New 5-digit PIN for the device.
@@ -76,7 +76,7 @@ scan_protocol_parameters:
       example: "a1b2c3d4e5f6"
       selector:
         device:
-          integration: blanco_unit
+          integration: blanco_unit_ha
     data:
       name: Data
       description: JSON object with evt_type (required), ctrl (optional), and pars (optional) fields. Example to get system info - {"evt_type":7, "ctrl":3, "pars":{"evt_type":2}}.
@@ -105,7 +105,7 @@ scan_wifi_networks:
       example: "a1b2c3d4e5f6"
       selector:
         device:
-          integration: blanco_unit
+          integration: blanco_unit_ha
 
 connect_wifi:
   name: Connect to WiFi
@@ -118,7 +118,7 @@ connect_wifi:
       example: "a1b2c3d4e5f6"
       selector:
         device:
-          integration: blanco_unit
+          integration: blanco_unit_ha
     ssid:
       name: SSID
       description: The WiFi network name to connect to.
@@ -146,7 +146,7 @@ disconnect_wifi:
       example: "a1b2c3d4e5f6"
       selector:
         device:
-          integration: blanco_unit
+          integration: blanco_unit_ha
 
 allow_cloud_services:
   name: Allow Cloud Services
@@ -159,7 +159,7 @@ allow_cloud_services:
       example: "a1b2c3d4e5f6"
       selector:
         device:
-          integration: blanco_unit
+          integration: blanco_unit_ha
     rca_id:
       name: RCA ID
       description: Remote cloud access ID. Leave empty to allow all cloud services.
@@ -180,4 +180,4 @@ factory_reset:
       example: "a1b2c3d4e5f6"
       selector:
         device:
-          integration: blanco_unit
+          integration: blanco_unit_ha

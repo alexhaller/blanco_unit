@@ -26,6 +26,7 @@ from .conftest import setup_integration
 def mock_coordinator():
     """Create a mock coordinator."""
     coordinator = MagicMock()
+    coordinator.config_entry = MagicMock(unique_id="AA:BB:CC:DD:EE:FF")
     coordinator.data = BlancoUnitData(
         connected=True,
         available=True,
@@ -102,7 +103,7 @@ async def test_disconnect_button(mock_coordinator) -> None:
     button = DisconnectButton(mock_coordinator)
 
     assert button.available is True
-    assert button.unique_id == "disconnect"
+    assert button.unique_id == "AA:BB:CC:DD:EE:FF_disconnect"
 
 
 async def test_disconnect_button_press(mock_coordinator) -> None:
@@ -139,7 +140,7 @@ async def test_refresh_data_button(mock_coordinator) -> None:
     button = RefreshDataButton(mock_coordinator)
 
     assert button.available is True
-    assert button.unique_id == "refresh_data"
+    assert button.unique_id == "AA:BB:CC:DD:EE:FF_refresh_data"
 
 
 async def test_refresh_data_button_press(mock_coordinator) -> None:

@@ -95,6 +95,7 @@ def mock_coordinator_fixture(mock_blanco_unit_data):
     from custom_components.blanco_unit_ha.coordinator import BlancoUnitCoordinator
 
     coordinator = MagicMock(spec=BlancoUnitCoordinator)
+    coordinator.config_entry = MagicMock(unique_id="AA:BB:CC:DD:EE:FF")
     coordinator.data = mock_blanco_unit_data
     coordinator.name = "Test Blanco Unit"
     coordinator.address = "AA:BB:CC:DD:EE:FF"

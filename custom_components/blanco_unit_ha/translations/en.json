@@ -44,7 +44,8 @@
       "already_configured": "This device is already configured.",
       "reconfigure_successful": "Configuration updated successfully!",
       "reauth_successful": "Re-authentication successful!",
-      "wrong_device": "Wrong device selected. Please select the correct device for re-authentication."
+      "wrong_device": "Wrong device selected. Please select the correct device for re-authentication.",
+      "no_legacy_entries": "There is no entry of the old `blanco_unit` integration left to take over. If its folder custom_components/blanco_unit is still installed, remove it and restart first."
     },
     "step": {
       "bluetooth": {
@@ -82,6 +83,25 @@
           "conf_name": "Device Name",
           "conf_pin": "PIN (5 digits)"
         }
+      },
+      "choose": {
+        "title": "Add Blanco Unit",
+        "description": "Entries of the old `blanco_unit` integration are still set up. That domain is used by this integration up to v2 and by Nailik/blanco_unit, so entries of both are offered.",
+        "menu_options": {
+          "migrate": "Take over an existing entry",
+          "manual": "Set up a new unit"
+        }
+      },
+      "migrate": {
+        "title": "Take over an existing entry",
+        "description": "The chosen entry moves to Blanco Unit (BLE) with its device, entities, entity IDs and history, and is then removed from the old integration. Its settings, including the PIN, are taken over as they are. Entries of Nailik/blanco_unit use the same domain and are taken over the same way.",
+        "data": {
+          "legacy_entry_id": "Entry"
+        }
+      },
+      "migrate_confirm": {
+        "title": "Take over {name}?",
+        "description": "{name} ({mac}) is still set up with the old `blanco_unit` integration (this integration up to v2, or Nailik/blanco_unit). Taking it over moves its device, entities, entity IDs and history to Blanco Unit (BLE), copies its settings including the PIN, and removes the old entry."
       }
     }
   },

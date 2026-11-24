@@ -54,6 +54,7 @@ from .conftest import setup_integration
 def mock_coordinator():
     """Create a mock coordinator."""
     coordinator = MagicMock()
+    coordinator.config_entry = MagicMock(unique_id="AA:BB:CC:DD:EE:FF")
     coordinator.data = BlancoUnitData(
         connected=True,
         available=True,
@@ -213,7 +214,7 @@ async def test_filter_remaining_sensor(mock_coordinator) -> None:
 
     assert sensor.available is True
     assert sensor.native_value == 85
-    assert sensor.unique_id == "filter_remaining"
+    assert sensor.unique_id == "AA:BB:CC:DD:EE:FF_filter_remaining"
 
 
 async def test_filter_remaining_sensor_unavailable(mock_coordinator) -> None:
@@ -231,7 +232,7 @@ async def test_co2_remaining_sensor(mock_coordinator) -> None:
 
     assert sensor.available is True
     assert sensor.native_value == 90
-    assert sensor.unique_id == "co2_remaining"
+    assert sensor.unique_id == "AA:BB:CC:DD:EE:FF_co2_remaining"
 
 
 async def test_co2_remaining_sensor_unavailable(mock_coordinator) -> None:
@@ -249,7 +250,7 @@ async def test_tap_state_sensor(mock_coordinator) -> None:
 
     assert sensor.available is True
     assert sensor.native_value == 1
-    assert sensor.unique_id == "tap_state"
+    assert sensor.unique_id == "AA:BB:CC:DD:EE:FF_tap_state"
 
 
 async def test_tap_state_sensor_unavailable(mock_coordinator) -> None:
@@ -267,7 +268,7 @@ async def test_clean_mode_state_sensor(mock_coordinator) -> None:
 
     assert sensor.available is True
     assert sensor.native_value == 0
-    assert sensor.unique_id == "clean_mode_state"
+    assert sensor.unique_id == "AA:BB:CC:DD:EE:FF_clean_mode_state"
 
 
 async def test_clean_mode_state_sensor_unavailable(mock_coordinator) -> None:
@@ -285,7 +286,7 @@ async def test_error_bits_sensor(mock_coordinator) -> None:
 
     assert sensor.available is True
     assert sensor.native_value == 0
-    assert sensor.unique_id == "error_bits"
+    assert sensor.unique_id == "AA:BB:CC:DD:EE:FF_error_bits"
 
 
 async def test_error_bits_sensor_unavailable(mock_coordinator) -> None:
@@ -303,7 +304,7 @@ async def test_filter_lifetime_sensor(mock_coordinator) -> None:
 
     assert sensor.available is True
     assert sensor.native_value == 365
-    assert sensor.unique_id == "filter_lifetime"
+    assert sensor.unique_id == "AA:BB:CC:DD:EE:FF_filter_lifetime"
 
 
 async def test_filter_lifetime_sensor_unavailable(mock_coordinator) -> None:
@@ -321,7 +322,7 @@ async def test_post_flush_quantity_sensor(mock_coordinator) -> None:
 
     assert sensor.available is True
     assert sensor.native_value == 100
-    assert sensor.unique_id == "post_flush_quantity"
+    assert sensor.unique_id == "AA:BB:CC:DD:EE:FF_post_flush_quantity"
 
 
 async def test_post_flush_quantity_sensor_unavailable(mock_coordinator) -> None:
@@ -339,7 +340,7 @@ async def test_firmware_main_sensor(mock_coordinator) -> None:
 
     assert sensor.available is True
     assert sensor.native_value == "1.2.0"
-    assert sensor.unique_id == "firmware_main"
+    assert sensor.unique_id == "AA:BB:CC:DD:EE:FF_firmware_main"
 
 
 async def test_firmware_main_sensor_unavailable(mock_coordinator) -> None:
@@ -357,7 +358,7 @@ async def test_firmware_comm_sensor(mock_coordinator) -> None:
 
     assert sensor.available is True
     assert sensor.native_value == "1.0.0"
-    assert sensor.unique_id == "firmware_comm"
+    assert sensor.unique_id == "AA:BB:CC:DD:EE:FF_firmware_comm"
 
 
 async def test_firmware_comm_sensor_unavailable(mock_coordinator) -> None:
@@ -375,7 +376,7 @@ async def test_firmware_elec_sensor(mock_coordinator) -> None:
 
     assert sensor.available is True
     assert sensor.native_value == "1.1.0"
-    assert sensor.unique_id == "firmware_elec"
+    assert sensor.unique_id == "AA:BB:CC:DD:EE:FF_firmware_elec"
 
 
 async def test_firmware_elec_sensor_unavailable(mock_coordinator) -> None:
@@ -393,7 +394,7 @@ async def test_device_name_sensor(mock_coordinator) -> None:
 
     assert sensor.available is True
     assert sensor.native_value == "Test Device"
-    assert sensor.unique_id == "device_name"
+    assert sensor.unique_id == "AA:BB:CC:DD:EE:FF_device_name"
 
 
 async def test_device_name_sensor_unavailable(mock_coordinator) -> None:
@@ -411,7 +412,7 @@ async def test_reset_count_sensor(mock_coordinator) -> None:
 
     assert sensor.available is True
     assert sensor.native_value == 10
-    assert sensor.unique_id == "reset_count"
+    assert sensor.unique_id == "AA:BB:CC:DD:EE:FF_reset_count"
 
 
 async def test_reset_count_sensor_unavailable(mock_coordinator) -> None:
@@ -428,7 +429,7 @@ async def test_device_type_sensor(mock_coordinator) -> None:
     sensor = DeviceTypeSensor(mock_coordinator)
 
     assert sensor.native_value == 1
-    assert sensor.unique_id == "device_type"
+    assert sensor.unique_id == "AA:BB:CC:DD:EE:FF_device_type"
 
 
 async def test_device_type_sensor_none(mock_coordinator) -> None:
@@ -445,7 +446,7 @@ async def test_serial_number_sensor(mock_coordinator) -> None:
 
     assert sensor.available is True
     assert sensor.native_value == "123456"
-    assert sensor.unique_id == "serial_number"
+    assert sensor.unique_id == "AA:BB:CC:DD:EE:FF_serial_number"
 
 
 async def test_serial_number_sensor_unavailable(mock_coordinator) -> None:
@@ -463,7 +464,7 @@ async def test_service_code_sensor(mock_coordinator) -> None:
 
     assert sensor.available is True
     assert sensor.native_value == "ABCDEF"
-    assert sensor.unique_id == "service_code"
+    assert sensor.unique_id == "AA:BB:CC:DD:EE:FF_service_code"
 
 
 async def test_service_code_sensor_unavailable(mock_coordinator) -> None:
@@ -481,7 +482,7 @@ async def test_wifi_ssid_sensor(mock_coordinator) -> None:
 
     assert sensor.available is True
     assert sensor.native_value == "TestSSID"
-    assert sensor.unique_id == "wifi_ssid"
+    assert sensor.unique_id == "AA:BB:CC:DD:EE:FF_wifi_ssid"
 
 
 async def test_wifi_ssid_sensor_unavailable(mock_coordinator) -> None:
@@ -499,7 +500,7 @@ async def test_wifi_signal_sensor(mock_coordinator) -> None:
 
     assert sensor.available is True
     assert sensor.native_value == -50
-    assert sensor.unique_id == "wifi_signal"
+    assert sensor.unique_id == "AA:BB:CC:DD:EE:FF_wifi_signal"
 
 
 async def test_wifi_signal_sensor_unavailable(mock_coordinator) -> None:
@@ -517,7 +518,7 @@ async def test_ip_address_sensor(mock_coordinator) -> None:
 
     assert sensor.available is True
     assert sensor.native_value == "192.168.1.100"
-    assert sensor.unique_id == "ip_address"
+    assert sensor.unique_id == "AA:BB:CC:DD:EE:FF_ip_address"
 
 
 async def test_ip_address_sensor_unavailable(mock_coordinator) -> None:
@@ -535,7 +536,7 @@ async def test_ble_mac_sensor(mock_coordinator) -> None:
 
     assert sensor.available is True
     assert sensor.native_value == "AA:BB:CC:DD:EE:FF"
-    assert sensor.unique_id == "ble_mac"
+    assert sensor.unique_id == "AA:BB:CC:DD:EE:FF_ble_mac"
 
 
 async def test_ble_mac_sensor_unavailable(mock_coordinator) -> None:
@@ -553,7 +554,7 @@ async def test_wifi_mac_sensor(mock_coordinator) -> None:
 
     assert sensor.available is True
     assert sensor.native_value == "11:22:33:44:55:66"
-    assert sensor.unique_id == "wifi_mac"
+    assert sensor.unique_id == "AA:BB:CC:DD:EE:FF_wifi_mac"
 
 
 async def test_wifi_mac_sensor_unavailable(mock_coordinator) -> None:
@@ -571,7 +572,7 @@ async def test_gateway_sensor(mock_coordinator) -> None:
 
     assert sensor.available is True
     assert sensor.native_value == "192.168.1.1"
-    assert sensor.unique_id == "gateway"
+    assert sensor.unique_id == "AA:BB:CC:DD:EE:FF_gateway"
 
 
 async def test_gateway_sensor_unavailable(mock_coordinator) -> None:
@@ -589,7 +590,7 @@ async def test_gateway_mac_sensor(mock_coordinator) -> None:
 
     assert sensor.available is True
     assert sensor.native_value == "AA:BB:CC:DD:EE:00"
-    assert sensor.unique_id == "gateway_mac"
+    assert sensor.unique_id == "AA:BB:CC:DD:EE:FF_gateway_mac"
 
 
 async def test_gateway_mac_sensor_unavailable(mock_coordinator) -> None:
@@ -607,7 +608,7 @@ async def test_subnet_sensor(mock_coordinator) -> None:
 
     assert sensor.available is True
     assert sensor.native_value == "255.255.255.0"
-    assert sensor.unique_id == "subnet"
+    assert sensor.unique_id == "AA:BB:CC:DD:EE:FF_subnet"
 
 
 async def test_subnet_sensor_unavailable(mock_coordinator) -> None:
