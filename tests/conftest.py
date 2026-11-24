@@ -162,5 +162,10 @@ def mock_coord_for_snapshots(mock_blanco_unit_data):
         instance.set_calibration_still = AsyncMock()
         instance.set_calibration_soda = AsyncMock()
         instance.last_update_success = True
-        mock_coord_class.return_value = instance
+
+        def _create(*_args, **kwargs):
+            instance.config_entry = kwargs["config_entry"]
+            return instance
+
+        mock_coord_class.side_effect = _create
         yield instance

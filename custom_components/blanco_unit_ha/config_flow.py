@@ -342,6 +342,14 @@ class BlancoUnitConfigFlow(ConfigFlow, domain=DOMAIN):
             },
         )
 
+    async def async_step_choose(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Offer to take over an old entry or to set up a new unit."""
+        return self.async_show_menu(
+            step_id="choose", menu_options=["migrate", "manual"]
+        )
+
     async def async_step_manual(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
@@ -383,9 +391,7 @@ class BlancoUnitConfigFlow(ConfigFlow, domain=DOMAIN):
         """Create the entry with unique id if not already configured."""
         _LOGGER.debug("async_step_user %s", _loggable(user_input))
         if user_input is None and await self._async_legacy_candidates():
-            return self.async_show_menu(
-                step_id="choose", menu_options=["migrate", "manual"]
-            )
+            return await self.async_step_choose()
         result = ValidationResult(errors={})
         if user_input is not None:
             result = await self.validate_input(user_input)
