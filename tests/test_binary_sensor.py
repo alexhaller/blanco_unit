@@ -32,6 +32,7 @@ from .conftest import setup_integration
 def mock_coordinator():
     """Create a mock coordinator."""
     coordinator = MagicMock()
+    coordinator.config_entry = MagicMock(unique_id="AA:BB:CC:DD:EE:FF")
     coordinator.data = BlancoUnitData(
         connected=True,
         available=True,
@@ -144,7 +145,7 @@ async def test_connection_binary_sensor(mock_coordinator) -> None:
     sensor = ConnectionBinarySensor(mock_coordinator)
 
     assert sensor.is_on is True
-    assert sensor.unique_id == "connection"
+    assert sensor.unique_id == "AA:BB:CC:DD:EE:FF_connection"
     assert sensor.icon == "mdi:bluetooth-connect"
 
 
@@ -163,7 +164,7 @@ async def test_water_dispensing_binary_sensor(mock_coordinator) -> None:
 
     assert sensor.available is True
     assert sensor.is_on is True
-    assert sensor.unique_id == "water_dispensing"
+    assert sensor.unique_id == "AA:BB:CC:DD:EE:FF_water_dispensing"
 
 
 async def test_water_dispensing_binary_sensor_not_active(mock_coordinator) -> None:
@@ -189,7 +190,7 @@ async def test_firmware_update_binary_sensor(mock_coordinator) -> None:
 
     assert sensor.available is True
     assert sensor.is_on is True
-    assert sensor.unique_id == "firmware_update"
+    assert sensor.unique_id == "AA:BB:CC:DD:EE:FF_firmware_update"
 
 
 async def test_firmware_update_binary_sensor_not_available(mock_coordinator) -> None:
@@ -215,7 +216,7 @@ async def test_cloud_connect_binary_sensor(mock_coordinator) -> None:
 
     assert sensor.available is True
     assert sensor.is_on is True
-    assert sensor.unique_id == "cloud_connection"
+    assert sensor.unique_id == "AA:BB:CC:DD:EE:FF_cloud_connection"
 
 
 async def test_cloud_connect_binary_sensor_disconnected(mock_coordinator) -> None:

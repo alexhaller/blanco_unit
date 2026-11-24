@@ -16,6 +16,16 @@ class BlancoUnitBaseEntity(CoordinatorEntity[BlancoUnitCoordinator]):
 
     _attr_has_entity_name: bool = True
 
+    def __init__(self, coordinator: BlancoUnitCoordinator) -> None:
+        """Prefix the entity key with the unit's unique ID."""
+        super().__init__(coordinator)
+        # Subclasses set _attr_unique_id to the entity key. The registry keys
+        # unique IDs per platform, not per device, so a second unit needs its own.
+        assert coordinator.config_entry is not None
+        self._attr_unique_id = (
+            f"{coordinator.config_entry.unique_id}_{self._attr_unique_id}"
+        )
+
     @cached_property
     def device_info(self) -> DeviceInfo:
         """Return device information."""

@@ -15,6 +15,7 @@ from custom_components.blanco_unit_ha.data import BlancoUnitData
 def mock_coordinator():
     """Create a mock coordinator."""
     coordinator = MagicMock()
+    coordinator.config_entry = MagicMock(unique_id="AA:BB:CC:DD:EE:FF")
     coordinator.data = BlancoUnitData(
         connected=True,
         available=True,
@@ -90,7 +91,7 @@ async def test_base_entity_unique_id(mock_coordinator) -> None:
     """Test BlancoUnitBaseEntity unique_id attribute."""
     entity = TestEntity(mock_coordinator)
 
-    assert entity.unique_id == "test_entity"
+    assert entity.unique_id == "AA:BB:CC:DD:EE:FF_test_entity"
 
 
 async def test_base_entity_coordinator_property(mock_coordinator) -> None:

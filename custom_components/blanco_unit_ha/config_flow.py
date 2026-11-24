@@ -17,8 +17,12 @@ from bleak_retry_connector import (
 )
 from homeassistant.components import bluetooth
 from homeassistant.components.bluetooth import BluetoothServiceInfoBleak
-from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
+from homeassistant.config_entries import ConfigEntry, ConfigFlow, ConfigFlowResult
 from homeassistant.helpers.selector import (
+    SelectOptionDict,
+    SelectSelector,
+    SelectSelectorConfig,
+    SelectSelectorMode,
     TextSelector,
     TextSelectorConfig,
     TextSelectorType,
@@ -36,6 +40,7 @@ from .client import (
 from .const import (
     CONF_DEV_ID,
     CONF_ERROR,
+    CONF_LEGACY_ENTRY_ID,
     CONF_MAC,
     CONF_NAME,
     CONF_PIN,
@@ -70,6 +75,7 @@ class BlancoUnitConfigFlow(ConfigFlow, domain=DOMAIN):
     VERSION = 1
 
     _discovery_info: BluetoothServiceInfoBleak | None = None
+    _legacy_entry: ConfigEntry | None = None
 
     def prefilledForm(
         self,
@@ -255,47 +261,113 @@ class BlancoUnitConfigFlow(ConfigFlow, domain=DOMAIN):
             if client is not None and client.is_connected:
                 await client.disconnect()
 
-    async def async_step_import(self, import_data: dict[str, Any]) -> ConfigFlowResult:
-        """Recreate an entry of the old domain without contacting the unit.
+    async def _async_legacy_candidates(self) -> list[ConfigEntry]:
+        """Return the entries under the old domain that can be taken over.
 
-        The unit may be out of reach at startup; the entry already proved it works.
-        """
-        await self.async_set_unique_id(import_data["unique_id"])
-        self._abort_if_unique_id_configured()
-        return self.async_create_entry(
-            title=import_data["title"], data=import_data["data"]
-        )
-
-    async def _async_adopt_legacy(self) -> ConfigFlowResult | None:
-        """Take over an entry left under the old domain, if there is one.
-
-        Home Assistant only loads an integration at startup when it has an
-        entry, so the import in async_setup never runs on its own after the
-        domain change. Adding the integration, by hand or through Bluetooth
-        discovery, creates the entry from the old one instead; setting it up
-        then moves the old device and entities over.
+        That domain is also the one of Nailik/blanco_unit, so its entries are
+        offered as well. Nothing is offered while either is still installed: it
+        would drive the same unit, and entities of a loaded integration cannot
+        move.
         """
         try:
             await async_get_integration(self.hass, LEGACY_DOMAIN)
         except IntegrationNotFound:
             pass
         else:
-            # The old folder is still installed: nothing may move yet
-            return None
+            return []
         configured = {entry.unique_id for entry in self._async_current_entries()}
-        for legacy in self.hass.config_entries.async_entries(LEGACY_DOMAIN):
-            if legacy.unique_id is None or legacy.unique_id in configured:
-                continue
+        return [
+            legacy
+            for legacy in self.hass.config_entries.async_entries(LEGACY_DOMAIN)
+            if legacy.unique_id is not None and legacy.unique_id not in configured
+        ]
+
+    def _async_create_from_legacy(self, legacy: ConfigEntry) -> ConfigFlowResult:
+        """Create the entry from an old one; its setup moves the old one over."""
+        return self.async_create_entry(
+            title=legacy.title,
+            data={**legacy.data, CONF_LEGACY_ENTRY_ID: legacy.entry_id},
+        )
+
+    async def async_step_migrate(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Let the user pick the old entry to take over."""
+        candidates = {
+            legacy.entry_id: legacy for legacy in await self._async_legacy_candidates()
+        }
+        if user_input is not None:
+            legacy = candidates.get(user_input[CONF_LEGACY_ENTRY_ID])
+            if legacy is None:
+                return self.async_abort(reason="no_legacy_entries")
             await self.async_set_unique_id(legacy.unique_id)
-            return self.async_create_entry(title=legacy.title, data=dict(legacy.data))
-        return None
+            self._abort_if_unique_id_configured()
+            return self._async_create_from_legacy(legacy)
+        if not candidates:
+            return self.async_abort(reason="no_legacy_entries")
+        return self.async_show_form(
+            step_id="migrate",
+            data_schema=probatio.Schema(
+                {
+                    probatio.Required(CONF_LEGACY_ENTRY_ID): SelectSelector(
+                        SelectSelectorConfig(
+                            options=[
+                                SelectOptionDict(
+                                    value=legacy.entry_id,
+                                    label=f"{legacy.title} ({legacy.unique_id})",
+                                )
+                                for legacy in candidates.values()
+                            ],
+                            mode=SelectSelectorMode.LIST,
+                        )
+                    )
+                }
+            ),
+        )
+
+    async def async_step_migrate_confirm(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Ask before taking over the old entry of a discovered unit."""
+        if (legacy := self._legacy_entry) is None:
+            return self.async_abort(reason="no_legacy_entries")
+        if user_input is not None:
+            return self._async_create_from_legacy(legacy)
+        self._set_confirm_only()
+        return self.async_show_form(
+            step_id="migrate_confirm",
+            description_placeholders={
+                "name": legacy.title,
+                "mac": legacy.unique_id or "",
+            },
+        )
+
+    async def async_step_choose(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Offer to take over an old entry or to set up a new unit."""
+        return self.async_show_menu(
+            step_id="choose", menu_options=["migrate", "manual"]
+        )
+
+    async def async_step_manual(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Set up a new unit although old entries could be taken over."""
+        return self.async_show_form(step_id="user", data_schema=self.prefilledForm())
 
     async def async_step_bluetooth(
         self, discovery_info: BluetoothServiceInfoBleak
     ) -> ConfigFlowResult:
         """Handle a bluetooth device being discovered."""
-        if (adopted := await self._async_adopt_legacy()) is not None:
-            return adopted
+        # Offer to take over the old entry of exactly this unit, if there is one
+        address = discovery_info.address.upper()
+        for legacy in await self._async_legacy_candidates():
+            if legacy.unique_id is not None and legacy.unique_id.upper() == address:
+                await self.async_set_unique_id(legacy.unique_id)
+                self._abort_if_unique_id_configured()
+                self._legacy_entry = legacy
+                return await self.async_step_migrate_confirm()
         _LOGGER.debug(
             "async_step_bluetooth called with %s and advertisement %s",
             discovery_info,
@@ -318,8 +390,8 @@ class BlancoUnitConfigFlow(ConfigFlow, domain=DOMAIN):
     ) -> ConfigFlowResult:
         """Create the entry with unique id if not already configured."""
         _LOGGER.debug("async_step_user %s", _loggable(user_input))
-        if user_input is None and (adopted := await self._async_adopt_legacy()):
-            return adopted
+        if user_input is None and await self._async_legacy_candidates():
+            return await self.async_step_choose()
         result = ValidationResult(errors={})
         if user_input is not None:
             result = await self.validate_input(user_input)

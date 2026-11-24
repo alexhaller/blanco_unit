@@ -42,6 +42,7 @@ from custom_components.blanco_unit_ha.const import (
 async def test_async_setup_success(hass: HomeAssistant) -> None:
     """Test successful async_setup."""
     mock_entry = MagicMock(spec=ConfigEntry)
+    mock_entry.unique_id = "AA:BB:CC:DD:EE:FF"
 
     with (
         patch(
@@ -63,6 +64,8 @@ async def test_async_setup_entry_success(hass: HomeAssistant) -> None:
     mock_coordinator.async_config_entry_first_refresh = AsyncMock()
 
     mock_entry = MagicMock(spec=ConfigEntry)
+
+    mock_entry.unique_id = "AA:BB:CC:DD:EE:FF"
     mock_entry.entry_id = "test_entry_id"
     mock_entry.data = {CONF_MAC: "AA:BB:CC:DD:EE:FF"}
     mock_entry.add_update_listener = MagicMock(return_value=MagicMock())
@@ -100,6 +103,7 @@ async def test_async_setup_entry_device_not_found_first_time(
 ) -> None:
     """Test config entry setup when device not found initially."""
     mock_entry = MagicMock(spec=ConfigEntry)
+    mock_entry.unique_id = "AA:BB:CC:DD:EE:FF"
     mock_entry.entry_id = "test_entry_id"
     mock_entry.data = {CONF_MAC: "AA:BB:CC:DD:EE:FF"}
 
@@ -129,6 +133,7 @@ async def test_async_setup_entry_device_not_found_callback_exists(
 ) -> None:
     """Test config entry setup when device not found and callback already exists."""
     mock_entry = MagicMock(spec=ConfigEntry)
+    mock_entry.unique_id = "AA:BB:CC:DD:EE:FF"
     mock_entry.entry_id = "test_entry_id"
     mock_entry.data = {CONF_MAC: "AA:BB:CC:DD:EE:FF"}
 
@@ -157,6 +162,7 @@ async def test_async_setup_entry_ble_callback_triggers_reload(
 ) -> None:
     """Test BLE callback triggers config entry reload."""
     mock_entry = MagicMock(spec=ConfigEntry)
+    mock_entry.unique_id = "AA:BB:CC:DD:EE:FF"
     mock_entry.entry_id = "test_entry_id"
     mock_entry.data = {CONF_MAC: "AA:BB:CC:DD:EE:FF"}
 
@@ -208,6 +214,8 @@ async def test_async_setup_entry_auth_failed(hass: HomeAssistant) -> None:
     )
 
     mock_entry = MagicMock(spec=ConfigEntry)
+
+    mock_entry.unique_id = "AA:BB:CC:DD:EE:FF"
     mock_entry.entry_id = "test_entry_id"
     mock_entry.data = {CONF_MAC: "AA:BB:CC:DD:EE:FF"}
 
@@ -243,6 +251,8 @@ async def test_async_setup_entry_home_assistant_error(hass: HomeAssistant) -> No
     mock_coordinator.async_config_entry_first_refresh = AsyncMock(side_effect=error)
 
     mock_entry = MagicMock(spec=ConfigEntry)
+
+    mock_entry.unique_id = "AA:BB:CC:DD:EE:FF"
     mock_entry.entry_id = "test_entry_id"
     mock_entry.data = {CONF_MAC: "AA:BB:CC:DD:EE:FF"}
 
@@ -278,6 +288,8 @@ async def test_async_setup_entry_generic_exception(hass: HomeAssistant) -> None:
     )
 
     mock_entry = MagicMock(spec=ConfigEntry)
+
+    mock_entry.unique_id = "AA:BB:CC:DD:EE:FF"
     mock_entry.entry_id = "test_entry_id"
     mock_entry.data = {CONF_MAC: "AA:BB:CC:DD:EE:FF"}
 
@@ -305,6 +317,7 @@ async def test_async_setup_entry_generic_exception(hass: HomeAssistant) -> None:
 async def test_async_reload_entry(hass: HomeAssistant) -> None:
     """Test config entry reload."""
     mock_entry = MagicMock(spec=ConfigEntry)
+    mock_entry.unique_id = "AA:BB:CC:DD:EE:FF"
     mock_entry.data = {"conf_pin": 12345}
 
     with (
@@ -327,6 +340,8 @@ async def test_async_unload_entry_success(hass: HomeAssistant) -> None:
     mock_coordinator.unload = AsyncMock()
 
     mock_entry = MagicMock(spec=ConfigEntry)
+
+    mock_entry.unique_id = "AA:BB:CC:DD:EE:FF"
     mock_entry.entry_id = "test_entry_id"
     mock_entry.data = {CONF_MAC: "AA:BB:CC:DD:EE:FF"}
     mock_entry.runtime_data = mock_coordinator
@@ -360,6 +375,8 @@ async def test_async_unload_entry_no_callback(hass: HomeAssistant) -> None:
     mock_coordinator.unload = AsyncMock()
 
     mock_entry = MagicMock(spec=ConfigEntry)
+
+    mock_entry.unique_id = "AA:BB:CC:DD:EE:FF"
     mock_entry.entry_id = "test_entry_id"
     mock_entry.data = {CONF_MAC: "AA:BB:CC:DD:EE:FF"}
     mock_entry.runtime_data = mock_coordinator
@@ -390,6 +407,8 @@ async def test_async_unload_entry_failed(hass: HomeAssistant) -> None:
     mock_coordinator.unload = AsyncMock()
 
     mock_entry = MagicMock(spec=ConfigEntry)
+
+    mock_entry.unique_id = "AA:BB:CC:DD:EE:FF"
     mock_entry.entry_id = "test_entry_id"
     mock_entry.data = {CONF_MAC: "AA:BB:CC:DD:EE:FF"}
     mock_entry.runtime_data = mock_coordinator
@@ -414,6 +433,8 @@ async def test_async_unload_entry_no_entry_data(hass: HomeAssistant) -> None:
     mock_coordinator.unload = AsyncMock()
 
     mock_entry = MagicMock(spec=ConfigEntry)
+
+    mock_entry.unique_id = "AA:BB:CC:DD:EE:FF"
     mock_entry.entry_id = "test_entry_id"
     mock_entry.data = {CONF_MAC: "AA:BB:CC:DD:EE:FF"}
     mock_entry.runtime_data = mock_coordinator
@@ -470,6 +491,7 @@ def _make_random_mac_entry() -> MagicMock:
     """Create a mock config entry with random MAC."""
     entry = MagicMock(spec=ConfigEntry)
     entry.entry_id = "test_entry_id"
+    entry.unique_id = "expected_dev_id"
     entry.data = {
         CONF_MAC: RANDOM_MAC_PLACEHOLDER,
         CONF_PIN: "12345",

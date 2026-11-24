@@ -6,6 +6,9 @@ DOMAIN = "blanco_unit_ha"
 # Domain up to v2: it collides with Nailik/blanco_unit, the integration this
 # one was forked from. Entries left under it are migrated on startup.
 LEGACY_DOMAIN = "blanco_unit"
+# Entry data key of an entry created from an old one: the entry_id of the
+# old entry, whose device and entities move over on setup
+CONF_LEGACY_ENTRY_ID = "legacy_entry_id"
 
 # Config Entry Keys
 CONF_MAC = "conf_mac"

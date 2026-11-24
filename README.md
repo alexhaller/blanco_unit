@@ -57,19 +57,22 @@ have to be removed once:
    is what gets migrated.
 3. Restart Home Assistant.
 4. Install **Blanco Unit (BLE)** from the Marketplace and restart again.
-5. Go to *Settings → Devices & services → Add integration → Blanco Unit (BLE)*.
-   It asks for nothing: it takes over the old entry right away. (Bluetooth
-   discovery of the device does the same on its own.)
+5. Go to *Settings → Devices & services → Add integration → Blanco Unit (BLE)*,
+   choose *Take over an existing entry* and pick the entry. When Home Assistant
+   discovers the unit over Bluetooth, it offers the same for that unit's entry;
+   confirm it there.
 
-The old entry is moved to the new domain: the device, its entities, their entity
-IDs and history stay. Service calls change their prefix from
+The entry is only taken over once you confirm it. It is moved to the new domain:
+the device, its entities, their entity IDs and history stay, and its settings,
+including the PIN, are copied. Nailik/blanco_unit uses the domain `blanco_unit`
+too, so its entries are offered and taken over the same way. Service calls change their prefix from
 `blanco_unit.` to `blanco_unit_ha.`, so update scripts and automations that call
 them.
 
 ### Manual Installation
 
 1. Download the latest release from GitHub
-2. Copy the `custom_components/blanco_unit` folder to your Home Assistant `config/custom_components/` directory
+2. Copy the `custom_components/blanco_unit_ha` folder to your Home Assistant `config/custom_components/` directory
 3. Restart Home Assistant
 
 ## Setup
