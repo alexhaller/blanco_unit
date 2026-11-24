@@ -1,3 +1,9 @@
+## [3.1.0](https://github.com/alexhaller/blanco_unit/compare/v3.0.1...v3.1.0) (2026-11-24)
+
+### Features
+
+* ask before taking over an old entry, give each unit its own unique IDs ([#6](https://github.com/alexhaller/blanco_unit/issues/6)) ([f890169](https://github.com/alexhaller/blanco_unit/commit/f8901692829ef7a818c57db08dc3d35926654401))
+
 ## [3.0.1](https://github.com/alexhaller/blanco_unit/compare/v3.0.0...v3.0.1) (2026-11-23)
 
 ### Bug Fixes
