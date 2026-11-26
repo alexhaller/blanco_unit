@@ -1,3 +1,9 @@
+## [3.1.1](https://github.com/alexhaller/blanco_unit/compare/v3.1.0...v3.1.1) (2026-11-26)
+
+### Bug Fixes
+
+* ship the brand icon at the sizes hassfest accepts ([5cac34f](https://github.com/alexhaller/blanco_unit/commit/5cac34fc2fb469f14d53d30948834863fd1e2d3f))
+
 ## [3.1.0](https://github.com/alexhaller/blanco_unit/compare/v3.0.1...v3.1.0) (2026-11-24)
 
 ### Features
